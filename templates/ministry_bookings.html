@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Booking Records') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <h2 style="color:#1a1a2e; font-size:22px;"><i class="fas fa-ticket"></i> {{ _('National Booking Records') }}</h2>
+    <a href="{{ url_for('ministry_dashboard') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> {{ _('Dashboard') }}</a>
+</div>
+
+<div class="card">
+    {% if bookings %}
+    <div class="table-wrap">
+    <table>
+        <tr><th>{{ _('Ref') }}</th><th>{{ _('Passenger') }}</th><th>{{ _('Route') }}</th><th>{{ _('Agency') }}</th><th>{{ _('Date') }}</th><th>{{ _('Status') }}</th><th>{{ _('Amount') }}</th></tr>
+        {% for bk in bookings %}
+        <tr>
+            <td><strong>{{ bk.ref }}</strong></td>
+            <td>{{ bk.passenger }}<br><span style="font-size:11px;color:#888;">{{ bk.phone }}</span></td>
+            <td>{{ bk.route }}</td>
+            <td>{{ bk.agency }}</td>
+            <td>{{ bk.date }}</td>
+            <td><span class="badge {% if bk.status == 'confirmed' %}badge-green{% elif bk.status == 'expired' %}badge-red{% else %}badge-orange{% endif %}">{{ bk.status }}</span></td>
+            <td><strong>{{ "{:,}".format(bk.amount) }} {{ country.currency }}</strong></td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+    {% else %}
+    <p style="color:#888; text-align:center; padding:40px;">{{ _('No bookings yet.') }}</p>
+    {% endif %}
+</div>
+{% endblock %}

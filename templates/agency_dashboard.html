@@ -1,0 +1,171 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Dashboard') }} - {{ agency.name }}{% endblock %}
+{% block content %}
+<div class="dash-header">
+    <h2 class="dash-title">{{ agency.name }}</h2>
+    <div style="display:flex; gap:8px; flex-wrap:wrap;">
+        <a href="{{ url_for('agency_subscribe') }}" class="btn btn-sm {% if sub %}btn-outline{% else %}btn-primary{% endif %}"><i class="fas fa-shield-alt"></i> {{ _('Subscription') }}</a>
+        <a href="{{ url_for('agency_announcements') }}" class="btn btn-outline btn-sm"><i class="fas fa-bullhorn"></i> {{ _('Announce') }}</a>
+        <a href="{{ url_for('agency_bookings') }}" class="btn btn-outline btn-sm"><i class="fas fa-ticket"></i> {{ _('Bookings') }}</a>
+        <a href="{{ url_for('agency_schedule_add') }}" class="btn btn-success btn-sm"><i class="fas fa-plus"></i> {{ _('Schedule') }}</a>
+    </div>
+</div>
+
+{% set rejection_reason = agency.get('rejection_reason', '') %}
+{% if rejection_reason %}
+<div class="card" style="background:#ffebee; border:2px solid #c62828; text-align:center; padding:20px; margin-bottom:20px;">
+    <div style="font-size:36px; margin-bottom:8px;"><i class="fas fa-ban" style="color:#c62828;"></i></div>
+    <h3 style="color:#c62828; font-size:18px;">{{ _('Agency Rejected') }}</h3>
+    <p style="color:#b71c1c; font-size:14px; margin-top:4px;"><strong>{{ _('Reason') }}:</strong> {{ rejection_reason }}</p>
+    <p style="color:#888; font-size:13px; margin-top:8px;">{{ _('Your agency registration has been rejected by the Ministry of Transport.') }}</p>
+</div>
+{% elif not agency.get('approved', False) %}
+<div class="card" style="background:#fff8e1; border:2px solid var(--flag-2); text-align:center; padding:20px; margin-bottom:20px;">
+    <div style="font-size:36px; margin-bottom:8px;"><i class="fas fa-clock" style="color:var(--flag-2);"></i></div>
+    <h3 style="color:#e65100; font-size:18px;">{{ _('Pending Ministry Approval') }}</h3>
+    <p style="color:#888; font-size:13px; margin-top:4px;">{{ _('Your agency registration is under review. You can still set up while waiting.') }}</p>
+</div>
+{% endif %}
+
+<div class="grid-4 stats-grid" style="margin-bottom:20px;">
+    <div class="stat-card"><div class="num">{{ routes|length }}</div><div class="label">{{ _('Routes') }}</div></div>
+    <div class="stat-card"><div class="num">{{ buses|length }}</div><div class="label">{{ _('Buses') }}</div></div>
+    <div class="stat-card"><div class="num">{{ bookings_count }}</div><div class="label">{{ _('Total Bookings') }}</div></div>
+    <div class="stat-card"><div class="num">{{ schedules|length }}</div><div class="label">{{ _('Upcoming Trips') }}</div></div>
+</div>
+
+{% if today_trips %}
+<div class="card card-accent" style="margin-bottom:16px; background:linear-gradient(135deg,#f0fdf4,#fff);">
+    <div style="display:flex; align-items:center; gap:10px;">
+        <span style="font-size:28px;"><i class="fas fa-calendar-day" style="color:var(--flag-1);"></i></span>
+        <div>
+            <span style="font-weight:700; font-size:16px;">{{ _("Today's Trips") }}</span>
+            <span style="color:#888; font-size:13px; margin-left:8px;">{{ today_trips|length }} {{ _('trip(s)') }}</span>
+        </div>
+    </div>
+    <div class="table-wrap" style="margin-top:10px;"><table>
+        <tr><th>{{ _('Route') }}</th><th>{{ _('Period') }}</th><th>{{ _('Time') }}</th><th>{{ _('Bus') }}</th><th>{{ _('Seats') }}</th><th></th></tr>
+        {% for t in today_trips %}
+        <tr>
+            <td><strong>{{ t.route.from }} → {{ t.route.to }}</strong></td>
+            <td><span class="badge badge-blue">{{ _(t.period|capitalize) }}</span></td>
+            <td>{{ t.time }}</td>
+            <td>{{ t.bus.plate if t.bus else '-' }}</td>
+            <td>{{ t.booked }}/{{ t.capacity }}</td>
+            <td><a href="{{ url_for('agency_manifest', sid=t.id) }}" class="btn btn-sm btn-primary">{{ _('List') }}</a></td>
+        </tr>
+        {% endfor %}
+    </table></div>
+</div>
+{% endif %}
+
+{% if total_revenue > 0 %}
+<div class="grid-2" style="margin-bottom:20px;">
+    <div class="card text-center" style="padding:18px; border-color:var(--flag-1);">
+        <div style="font-size:24px; color:var(--flag-1); font-weight:800;">{{ "{:,}".format(total_revenue) }}</div>
+        <div style="color:#888; font-size:13px;">{{ _('Total Revenue') }} ({{ country.currency }})</div>
+    </div>
+    <div class="card text-center" style="padding:18px; background:#f9fafb;">
+        {% if sub %}
+        <div style="font-size:14px; color:var(--flag-1); font-weight:600;"><i class="fas fa-shield-alt"></i> {{ _('Commission Exempt') }}</div>
+        <div style="color:#888; font-size:12px; margin-top:4px;">{{ _('Subscription active until') }} {{ sub.end_date }}</div>
+        {% else %}
+        <div style="font-size:14px; color:var(--flag-3); font-weight:600;"><i class="fas fa-info-circle"></i> {{ _('Platform Commission (1%)') }}</div>
+        <div style="color:#888; font-size:12px; margin-top:4px;">{{ _('Deducted automatically per booking') }} &middot; <a href="{{ url_for('agency_subscribe') }}" style="color:var(--flag-1); font-weight:600;">{{ _('Get exempt') }}</a></div>
+        {% endif %}
+    </div>
+</div>
+
+{% if revenue_by_route %}
+<div class="card" style="margin-bottom:20px;">
+    <h3 class="card-title"><i class="fas fa-chart-bar" style="color:var(--flag-1);"></i> {{ _('Revenue by Route') }}</h3>
+    <div class="table-wrap"><table>
+        <tr><th>{{ _('Route') }}</th><th>{{ _('Revenue') }} ({{ country.currency }})</th><th class="hide-mobile">{{ _('Share') }}</th></tr>
+        {% for route_name, amt in revenue_by_route.items() %}
+        <tr>
+            <td><strong>{{ route_name }}</strong></td>
+            <td><strong style="color:var(--flag-1);">{{ "{:,}".format(amt) }}</strong></td>
+            <td class="hide-mobile">
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="height:6px; width:80px; background:#e0e0e0; border-radius:3px; overflow:hidden;">
+                        <div style="height:100%; width:{{ (amt / total_revenue * 100)|round }}%; background:linear-gradient(90deg,var(--flag-1),var(--flag-2)); border-radius:3px;"></div>
+                    </div>
+                    <span style="font-size:11px; color:#888;">{{ (amt / total_revenue * 100)|round }}%</span>
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table></div>
+</div>
+{% endif %}
+{% endif %}
+
+<div class="grid-2" style="margin-bottom:20px;">
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 class="card-title">{{ _('Buses') }}</h3>
+            <a href="{{ url_for('agency_buses') }}" class="btn btn-outline btn-sm">{{ _('Manage') }}</a>
+        </div>
+        {% if buses %}
+        <div class="table-wrap"><table><tr><th>{{ _('Plate') }}</th><th>{{ _('Type') }}</th><th>{{ _('Seats') }}</th><th class="hide-mobile">{{ _('Status') }}</th></tr>
+        {% for b in buses %}
+        <tr><td><strong>{{ b.plate }}</strong></td><td><span class="badge {% if b.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}">{{ b.bus_type|upper }}</span></td><td>{{ b.capacity }}</td><td class="hide-mobile"><span class="badge {% if b.status == 'available' %}badge-green{% else %}badge-red{% endif %}">{{ b.status }}</span></td></tr>
+        {% endfor %}</table></div>
+        {% else %}<p style="color:#888; font-size:13px;">{{ _('No buses.') }} <a href="{{ url_for('agency_bus_add') }}">{{ _('Add one') }}</a>.</p>{% endif %}
+    </div>
+    <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+            <h3 class="card-title">{{ _('Routes') }}</h3>
+            <a href="{{ url_for('agency_routes') }}" class="btn btn-outline btn-sm">{{ _('Manage') }}</a>
+        </div>
+        {% if routes %}
+        <div class="table-wrap"><table><tr><th>{{ _('Route') }}</th><th>{{ _('Price') }}</th></tr>
+        {% for r in routes %}
+        <tr><td><strong>{{ r.from }} → {{ r.to }}</strong></td><td><strong style="color:var(--flag-1);">{{ r.price|currency }}</strong></td></tr>
+        {% endfor %}</table></div>
+        {% else %}<p style="color:#888; font-size:13px;">{{ _('No routes.') }} <a href="{{ url_for('agency_route_add') }}">{{ _('Add one') }}</a>.</p>{% endif %}
+    </div>
+</div>
+
+{% if recent_bookings %}
+<div class="card" style="margin-bottom:20px;">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 class="card-title"><i class="fas fa-receipt" style="color:var(--flag-1);"></i> {{ _('Recent Bookings') }}</h3>
+        <a href="{{ url_for('agency_bookings') }}" class="btn btn-outline btn-sm">{{ _('View All') }}</a>
+    </div>
+    <div class="table-wrap"><table>
+        <tr><th>{{ _('Ref') }}</th><th>{{ _('Route') }}</th><th>{{ _('Date') }}</th><th class="hide-mobile">{{ _('Time') }}</th><th>{{ _('Status') }}</th></tr>
+        {% for bk in recent_bookings %}
+        <tr>
+            <td style="font-family:monospace; font-size:12px;">{{ bk.booking_ref[-8:] }}</td>
+            <td>{% if bk._route %}{{ bk._route.from }} → {{ bk._route.to }}{% else %}-{% endif %}</td>
+            <td>{{ bk._date }}</td>
+            <td class="hide-mobile">{{ bk._time }}</td>
+            <td><span class="badge {% if bk.status == 'confirmed' %}badge-green{% elif bk.status == 'cancelled' %}badge-red{% else %}badge-orange{% endif %}">{{ bk.status }}</span></td>
+        </tr>
+        {% endfor %}
+    </table></div>
+</div>
+{% endif %}
+
+<div class="card">
+    <div style="display:flex; justify-content:space-between; align-items:center;">
+        <h3 class="card-title"><i class="fas fa-calendar-alt" style="color:var(--flag-1);"></i> {{ _('Upcoming Trips') }}</h3>
+        <a href="{{ url_for('agency_schedules') }}" class="btn btn-outline btn-sm">{{ _('All Trips') }}</a>
+    </div>
+    {% set active_scheds = schedules|selectattr('status', 'equalto', 'active')|list %}
+    {% if active_scheds %}
+    <div class="table-wrap"><table><tr><th>{{ _('Route') }}</th><th>{{ _('Date') }}</th><th>{{ _('Period') }}</th><th>{{ _('Bus') }}</th><th>{{ _('Seats') }}</th><th></th></tr>
+    {% for t in active_scheds %}
+    <tr>
+        <td><strong>{{ t.route.from }} → {{ t.route.to }}</strong></td>
+        <td>{{ t.date }}</td>
+        <td><span class="badge badge-blue">{{ _(t.period|capitalize) }}</span></td>
+        <td>{{ t.bus.plate if t.bus else '-' }}</td>
+        <td>{{ t.booked }}/{{ t.capacity }}</td>
+        <td><a href="{{ url_for('agency_manifest', sid=t.id) }}" class="btn btn-sm btn-primary">{{ _('Manifest') }}</a></td>
+    </tr>
+    {% endfor %}</table></div>
+    {% else %}<p style="color:#888; font-size:13px;">{{ _('No trips scheduled.') }}</p>{% endif %}
+</div>
+{% endblock %}

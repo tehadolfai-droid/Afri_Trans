@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Payment') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div class="card card-accent" style="margin-bottom:20px;">
+    <div style="display:flex; align-items:center; gap:12px; flex-wrap:wrap;">
+        <div style="background:linear-gradient(135deg,var(--flag-1),#00604a); color:#fff; width:44px; height:44px; border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:20px;"><i class="fas fa-credit-card"></i></div>
+        <div>
+            <h2 style="font-size:20px; color:#1a1a2e;">{{ _('Payment') }}</h2>
+            <div style="color:#888; font-size:13px; margin-top:2px;">
+                {{ route.from }} &rarr; {{ route.to }} &bull; {{ agency.name }} &bull; {{ bk.booking_ref }}
+            </div>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:480px; margin:0 auto;">
+    <div class="card" style="border:1px solid #e8e8e8;">
+        {% if bk.seat_number %}
+        <div style="background:#e3f2fd; border-radius:10px; padding:10px 16px; margin-bottom:14px; font-size:13px; color:#1565c0; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-couch"></i> {{ _('Seat') }} <strong>{{ bk.seat_number }}</strong>
+        </div>
+        {% endif %}
+        <div style="background:linear-gradient(135deg,#f0fdf4,#e8f5e9); border-radius:12px; padding:20px; margin-bottom:20px; text-align:center;">
+            <div style="font-size:12px; color:#555;">{{ _('Total to pay') }}</div>
+            <div style="font-size:32px; font-weight:900; color:var(--flag-1);">{{ total_price|currency }}</div>
+            <div style="font-size:11px; color:#555; margin-top:4px;">
+                {{ _('Transport:') }} {{ price|currency }}
+                {% if bus and bus.bus_type == 'vip' %}({{ route.price|currency }} + {{ _('VIP 3,000') }}){% endif %}
+            </div>
+            {% if luggage_fee %}
+            <div style="font-size:11px; color:#e65100;">{{ _('Luggage:') }} {{ luggage_fee|currency }} ({{ bk.get('luggage_weight', 0) }} kg)</div>
+            {% endif %}
+            <hr style="margin:12px 0; border-color:#c8e6c9;">
+        </div>
+
+        <form method="POST">
+            <div style="margin-bottom:20px;">
+                <label style="font-weight:600; font-size:14px; display:block; margin-bottom:10px;">{{ _('Select payment method') }}</label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    {% for p in country_providers %}
+                    <label class="pay-option" style="flex:1; min-width:120px; cursor:pointer;">
+                        <input type="radio" name="provider" value="{{ p.code }}" required style="display:none;" onchange="this.parentElement.classList.toggle('selected')">
+                        <div style="border:2px solid #e0e0e0; border-radius:12px; padding:16px; text-align:center; transition:all 0.2s;">
+                            <div style="font-size:28px; margin-bottom:4px;"><i class="fas {{ p.icon }}" style="color:{{ p.color }};"></i></div>
+                            <div style="font-weight:700; font-size:13px; color:#1a1a2e;">{{ p.name }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('Mobile Money Phone Number') }}</label>
+                <input type="tel" name="phone" class="form-control" required placeholder="{{ _('e.g. 677123456') }}" style="font-size:16px;">
+                <div style="font-size:11px; color:#999; margin-top:4px;">
+                    <i class="fas fa-info-circle"></i> {{ _('Enter your mobile money phone number') }}
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-success btn-lg" style="width:100%;">
+                <i class="fas fa-check-circle"></i> {{ _('Confirm and Pay') }}
+            </button>
+        </form>
+    </div>
+</div>
+
+<style>
+.pay-option input:checked + div,
+.pay-option.selected div {
+    border-color: var(--flag-1) !important;
+    background: #f0fdf4;
+    box-shadow: 0 0 0 3px rgba(0,122,94,0.15);
+}
+</style>
+{% endblock %}

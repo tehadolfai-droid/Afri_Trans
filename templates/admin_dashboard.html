@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% block title %}Admin Dashboard - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:900px; margin:20px auto;">
+
+    <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+        <h1 style="font-size:22px; margin:0;"><i class="fas fa-user-shield" style="color:#c62828;"></i> Super Admin Dashboard</h1>
+        <a href="{{ url_for('admin_logout') }}" style="background:#fee; color:#c62828; padding:8px 16px; border-radius:8px; text-decoration:none; font-weight:600; font-size:13px;">Logout</a>
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-bottom:24px;">
+        <div class="card" style="padding:20px; text-align:center;">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-building" style="color:#2196f3;"></i></div>
+            <div style="font-size:28px; font-weight:900; color:#2196f3;">{{ total_agencies }}</div>
+            <div style="color:#888; font-size:12px; margin-top:4px;">Total Agencies</div>
+        </div>
+        <div class="card" style="padding:20px; text-align:center;">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-check-circle" style="color:#4caf50;"></i></div>
+            <div style="font-size:28px; font-weight:900; color:#4caf50;">{{ subscribed }}</div>
+            <div style="color:#888; font-size:12px; margin-top:4px;">Subscribed Agencies</div>
+        </div>
+        <div class="card" style="padding:20px; text-align:center;">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-coins" style="color:#ff9800;"></i></div>
+            <div style="font-size:28px; font-weight:900; color:#ff9800;">{{ total_commission|currency }}</div>
+            <div style="color:#888; font-size:12px; margin-top:4px;">Total Platform Revenue</div>
+        </div>
+    </div>
+
+    <div class="card" style="padding:20px; margin-bottom:24px;">
+        <h3 style="font-size:16px; margin:0 0 12px 0;"><i class="fas fa-tag" style="color:#c62828;"></i> Subscription Prices (per month)</h3>
+        <form method="POST" action="{{ url_for('admin_update_prices') }}" style="display:flex; gap:12px; align-items:flex-end; flex-wrap:wrap;">
+            {% for curr, price in prices.items() %}
+            <div style="flex:1; min-width:120px;">
+                <label style="font-weight:600; font-size:13px; display:block; margin-bottom:4px;">{{ curr }}</label>
+                <input type="number" name="price_{{ curr }}" value="{{ price }}" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+            </div>
+            {% endfor %}
+            <button type="submit" class="btn btn-primary" style="padding:10px 20px; white-space:nowrap;">Update Prices</button>
+        </form>
+        <div style="font-size:11px; color:#888; margin-top:8px;">Custom months are calculated as: monthly price x number of months</div>
+    </div>
+
+    <div class="card" style="padding:20px; margin-bottom:24px;">
+        <h3 style="font-size:16px; margin:0 0 12px 0;"><i class="fas fa-plus-circle" style="color:#4caf50;"></i> Assign Subscription to Agency</h3>
+        <div style="display:flex; gap:10px; align-items:flex-end; flex-wrap:wrap;">
+            <div style="flex:2; min-width:200px;">
+                <label style="font-weight:600; font-size:13px; display:block; margin-bottom:4px;">Agency</label>
+                <select id="sub_agency" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+                    {% for a in all_agencies %}
+                    <option value="{{ a.id }}">{{ a.name }} ({{ a.country|upper }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div style="flex:1; min-width:100px;">
+                <label style="font-weight:600; font-size:13px; display:block; margin-bottom:4px;">Months</label>
+                <input type="number" id="sub_months" min="1" value="1" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; box-sizing:border-box;">
+            </div>
+            <button type="button" class="btn btn-primary" style="padding:10px 20px;" onclick="assignSubscription()">Assign</button>
+        </div>
+    </div>
+
+    <div class="card" style="padding:20px;">
+        <h3 style="font-size:16px; margin:0 0 12px 0;"><i class="fas fa-list" style="color:#2196f3;"></i> All Subscriptions</h3>
+        {% if subscriptions %}
+        <div style="overflow-x:auto;">
+            <table style="width:100%; border-collapse:collapse; font-size:13px;">
+                <thead>
+                    <tr style="background:#f5f5f5; text-align:left;">
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Agency</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Country</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Plan</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Amount</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Start</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">End</th>
+                        <th style="padding:10px; border-bottom:2px solid #e0e0e0;">Status</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    {% for s in subscriptions %}
+                    <tr style="border-bottom:1px solid #f0f0f0;">
+                        <td style="padding:8px 10px; font-weight:600;">{{ s.agency_name }}</td>
+                        <td style="padding:8px 10px;">{{ s.country|upper }}</td>
+                        <td style="padding:8px 10px;">{{ s.plan }}</td>
+                        <td style="padding:8px 10px;">{{ s.amount_paid|currency }}</td>
+                        <td style="padding:8px 10px;">{{ s.start_date }}</td>
+                        <td style="padding:8px 10px;">{{ s.end_date }}</td>
+                        <td style="padding:8px 10px;">
+                            {% if s.status == 'active' %}
+                            <span style="background:#e8f5e9; color:#2e7d32; padding:3px 8px; border-radius:12px; font-size:11px; font-weight:600;">Active</span>
+                            {% else %}
+                            <span style="background:#f5f5f5; color:#888; padding:3px 8px; border-radius:12px; font-size:11px;">Expired</span>
+                            {% endif %}
+                        </td>
+                    </tr>
+                    {% endfor %}
+                </tbody>
+            </table>
+        </div>
+        {% else %}
+        <p style="color:#888; text-align:center; padding:20px;">No subscriptions yet.</p>
+        {% endif %}
+    </div>
+
+</div>
+
+<script>
+function assignSubscription() {
+    var agencyId = document.getElementById('sub_agency').value;
+    var months = document.getElementById('sub_months').value;
+    if (!agencyId || !months || months < 1) {
+        alert('Please select an agency and enter number of months.');
+        return;
+    }
+    if (confirm('Assign ' + months + ' month(s) subscription to this agency?')) {
+        var form = document.createElement('form');
+        form.method = 'POST';
+        form.action = '/admin/subscribe/' + agencyId;
+        var input = document.createElement('input');
+        input.type = 'hidden';
+        input.name = 'months';
+        input.value = months;
+        form.appendChild(input);
+        document.body.appendChild(form);
+        form.submit();
+    }
+}
+</script>
+{% endblock %}

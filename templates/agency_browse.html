@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}{{ agency.name }} - AFRI Trans{% endblock %}
+{% block content %}
+<div class="card" style="margin-bottom:16px; padding:20px 24px; background:linear-gradient(135deg,#f0fdf4,#fff); border-left:4px solid var(--flag-1);">
+    <div style="display:flex; align-items:center; gap:16px; flex-wrap:wrap;">
+        <div style="font-size:48px;"><i class="fas fa-bus" style="color:var(--flag-1);"></i></div>
+        <div style="flex:1;">
+            <h2 style="font-size:22px; color:#1a1a2e;">{{ agency.name }}</h2>
+            <div style="color:#888; font-size:13px; margin-top:2px;">
+                <i class="fas fa-phone" style="color:#888;"></i> {{ agency.phone }} &bull; <i class="fas fa-bus" style="color:#888;"></i> {{ buses|length }} {{ _('buses') }} &bull; <i class="fas fa-road" style="color:#888;"></i> {{ routes|length }} {{ _('routes') }}
+            </div>
+        </div>
+        <a href="{{ url_for('index') }}" class="btn btn-primary btn-sm">{{ _('View All Trips') }}</a>
+    </div>
+</div>
+
+{% if announcements %}
+<div class="card" style="margin-bottom:16px; border-left:4px solid var(--flag-2);">
+    <div style="display:flex; flex-direction:column; gap:8px;">
+        {% for ann in announcements %}
+        <div style="display:flex; align-items:center; gap:8px;">
+            <span style="display:inline-block; padding:2px 10px; border-radius:20px; font-size:10px; font-weight:800; flex-shrink:0;
+                {% if ann.badge == 'NEW' %}background:#e3f2fd; color:#1565c0;
+                {% elif ann.badge == 'PROMO' %}background:#fce4ec; color:#c62828;
+                {% elif ann.badge == 'UPDATE' %}background:#fff3e0; color:#e65100;
+                {% else %}background:#f3e5f5; color:#7b1fa2;
+                {% endif %}">{{ ann.badge }}</span>
+            <span style="font-size:14px; color:#1a1a2e;">{{ ann_msg(ann) }}</span>
+            <span style="font-size:11px; color:#999; margin-left:auto; flex-shrink:0;">{{ ann.created_at[:10] }}</span>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<div class="grid-2" style="margin-bottom:16px;">
+    <div class="card">
+        <h3 class="card-title"><i class="fas fa-road" style="color:var(--flag-1);"></i> {{ _('Routes') }}</h3>
+        {% if routes %}
+        <div class="table-wrap"><table>
+            <tr><th>{{ _('From') }}</th><th>{{ _('To') }}</th><th>{{ _('Duration') }}</th><th>{{ _('Price') }}</th></tr>
+            {% for r in routes %}
+            <tr>
+                <td style="font-weight:600;">{{ r.from }}</td>
+                <td style="font-weight:600;">{{ r.to }}</td>
+                <td>{{ r.duration }}</td>
+                <td style="font-weight:700; color:var(--flag-1);">{{ r.price|currency }}</td>
+            </tr>
+            {% endfor %}
+        </table></div>
+        {% else %}<p style="color:#888; font-size:13px;">{{ _('No routes registered yet.') }}</p>{% endif %}
+    </div>
+    <div class="card">
+        <h3 class="card-title"><i class="fas fa-bus" style="color:var(--flag-1);"></i> {{ _('Fleet') }}</h3>
+        {% if buses %}
+        <div class="table-wrap"><table>
+                <tr><th>{{ _('Plate') }}</th><th>{{ _('Type') }}</th><th>{{ _('Seats') }}</th></tr>
+            {% for b in buses %}
+            <tr>
+                <td style="font-weight:600; letter-spacing:1px;">{{ b.plate }}</td>
+                <td><span class="badge {% if b.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}">{{ b.bus_type|upper }}</span></td>
+                <td>{{ b.capacity }}</td>
+            </tr>
+            {% endfor %}
+        </table></div>
+        {% else %}<p style="color:#888; font-size:13px;">{{ _('No buses registered yet.') }}</p>{% endif %}
+    </div>
+</div>
+
+<div class="card">
+    <h3 class="card-title"><i class="fas fa-calendar-alt" style="color:var(--flag-1);"></i> {{ _('Upcoming Trips') }}</h3>
+    {% if schedules %}
+    <div class="table-wrap"><table>
+        <tr><th>{{ _('Route') }}</th><th>{{ _('Date') }}</th><th>{{ _('Period') }}</th><th>{{ _('Time') }}</th><th>{{ _('Bus') }}</th><th>{{ _('Seats') }}</th><th></th></tr>
+        {% for t in schedules %}
+        <tr>
+            <td style="font-weight:600;">{{ t.route.from }} → {{ t.route.to }}</td>
+            <td>{{ t.date }}</td>
+            <td>
+                {% set icons = {'morning': 'fa-cloud-sun', 'afternoon': 'fa-sun', 'night': 'fa-moon'} %}
+                {% set labels = {'morning': 'Morning', 'afternoon': 'Afternoon', 'night': 'Night'} %}
+                <span class="badge badge-blue"><i class="fas {{ icons.get(t.period, 'fa-clock') }}"></i> {{ _(labels.get(t.period, t.period)) }}</span>
+            </td>
+            <td>{{ t.time }}</td>
+            <td style="letter-spacing:1px;">{{ t.bus.plate if t.bus else '-' }}</td>
+            <td>
+                <div style="display:flex; align-items:center; gap:6px;">
+                    <div style="flex:1; height:6px; background:#e0e0e0; border-radius:3px; min-width:40px;">
+                        <div style="height:6px; border-radius:3px; width:{{ (t.booked / t.capacity * 100)|int if t.capacity > 0 else 0 }}%; background:{% if t.booked >= t.capacity %}#c62828{% elif t.booked / t.capacity > 0.7 %}#f57f17{% else %}#2e7d32{% endif %};"></div>
+                    </div>
+                    <span style="font-size:12px; white-space:nowrap;">{{ t.booked }}/{{ t.capacity }}</span>
+                </div>
+            </td>
+            <td>
+                {% if t.booked < t.capacity %}
+                <a href="{{ url_for('index') }}" class="btn btn-sm btn-success">{{ _('Book Now') }}</a>
+                {% else %}
+                <span class="badge badge-red">{{ _('Full') }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table></div>
+    {% else %}<p style="color:#888; font-size:13px;">{{ _('No upcoming trips scheduled.') }}</p>{% endif %}
+</div>
+{% endblock %}

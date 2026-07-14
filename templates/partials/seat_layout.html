@@ -1,0 +1,149 @@
+<style>
+.bus-body { background:#fff; border-radius:12px; padding:10px 8px; box-shadow:inset 0 0 0 1.5px #1a1a2e, 0 2px 12px rgba(0,0,0,0.06); position:relative; }
+.bus-body::before { content:''; position:absolute; top:0; left:0; right:0; bottom:0; border-radius:12px; background:radial-gradient(ellipse at 50% 0%, rgba(0,122,94,0.03) 0%, transparent 70%); pointer-events:none; }
+.seat-std { aspect-ratio:1; width:100%; max-width:32px; margin:0 auto; display:flex; align-items:center; justify-content:center; border-radius:5px; font-size:8px; font-weight:700; cursor:pointer; transition:all 0.12s; position:relative; background:linear-gradient(145deg,#e8f5e9,#c8e6c9); border:1.5px solid #2e7d32; color:#1b5e20; box-shadow:0 1px 4px rgba(46,125,50,0.12); }
+.seat-vip { aspect-ratio:1; width:100%; max-width:32px; margin:0 auto; display:flex; align-items:center; justify-content:center; border-radius:5px; font-size:8px; font-weight:700; cursor:pointer; transition:all 0.12s; position:relative; background:linear-gradient(145deg,#fff8e1,#ffecb3); border:1.5px solid #f9a825; color:#e65100; box-shadow:0 1px 4px rgba(249,168,37,0.18); }
+.seat-std:hover:not(.taken) { transform:scale(1.06); box-shadow:0 2px 8px rgba(46,125,50,0.25); }
+.seat-vip:hover:not(.taken) { transform:scale(1.06); box-shadow:0 2px 8px rgba(249,168,37,0.3); }
+.seat-std.selected, .seat-vip.selected { background:linear-gradient(145deg,#e3f2fd,#bbdefb); border-color:#1565c0; color:#1565c0; transform:scale(1.08); box-shadow:0 2px 12px rgba(21,101,192,0.25); }
+.seat-taken { background:#f5f5f5; border:1.5px solid #e0e0e0; color:#ccc; cursor:not-allowed; opacity:0.6; }
+.aisle { background:transparent; }
+.grid-row { display:grid; gap:3px; margin-bottom:3px; align-items:center; }
+.driver-area { background:linear-gradient(135deg,#1a1a2e,#2d2d44); color:#fff; border-radius:8px; padding:4px 10px; display:flex; align-items:center; gap:6px; margin-bottom:6px; }
+.door-front { background:#e8eaf6; border:1.5px dashed #5c6bc0; border-radius:6px; padding:2px 8px; font-size:7px; color:#283593; font-weight:600; text-align:center; letter-spacing:0.5px; }
+.door-rear { display:flex; flex-direction:column; align-items:center; justify-content:center; background:#f3e5f5; border:1.5px dashed #7b1fa2; border-radius:6px; padding:1px 3px; font-size:6px; color:#6a1b9a; font-weight:600; text-align:center; letter-spacing:0.5px; }
+.toilet-area { background:#fce4ec; border:1.5px dashed #e91e63; border-radius:6px; padding:2px 6px; font-size:7px; color:#c2185b; font-weight:600; text-align:center; letter-spacing:0.5px; }
+.emergency-strip { display:flex; align-items:center; justify-content:center; gap:6px; margin:4px 0; padding:2px; background:#fff3e0; border-radius:4px; }
+@media (max-width:480px){.seat-std,.seat-vip{max-width:24px!important;min-width:18px;font-size:7px;border-radius:3px;}.bus-body{padding:6px 4px;}.door-rear{font-size:5px!important;}.driver-area{padding:2px 6px;font-size:7px;}.driver-area span{font-size:10px!important;}.driver-area div div{font-size:6px!important;}.emergency-strip{font-size:6px;}}
+</style>
+
+<div class="card card-accent" style="margin-bottom:8px;">
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div style="background:linear-gradient(135deg,var(--flag-1),#00604a); color:#fff; width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px;"><i class="fas fa-couch"></i></div>
+        <div>
+            <div style="font-weight:700; font-size:13px;">{{ route.from }} → {{ route.to }}</div>
+            <div style="color:#888; font-size:11px; margin-top:1px;">
+                <strong>{{ agency.name }}</strong> &bull; {{ s.date }} {{ _('at') }} {{ s.time }} &bull; {{ bus.plate }}
+                <span class="badge {% if bus.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}" style="font-size:9px;">{{ bus.bus_type|upper }}</span>
+            </div>
+        </div>
+        <div style="margin-left:auto; text-align:right;">
+            <div style="font-size:10px; color:#888;">{{ _('Price') }}</div>
+            <div style="font-size:16px; font-weight:900; color:var(--flag-1);">{{ ((route.price + vip_surcharge) if bus.bus_type == 'vip' else route.price)|currency }}</div>
+        </div>
+    </div>
+</div>
+
+<div class="card">
+    {% set bus_label = _('{n}-Seater Luxury Coach').format(n=bus.capacity) if bus.bus_type == 'vip' else _('{n}-Seater Coach').format(n=bus.capacity) %}
+    <div style="font-weight:700; font-size:12px; margin-bottom:8px;"><i class="fas fa-couch" style="color:var(--flag-1);"></i> {{ _('Choose Your Seat') }} &mdash; {{ bus_label }}</div>
+
+    <div style="display:flex; gap:10px; margin-bottom:8px; font-size:10px; flex-wrap:wrap;">
+        {% if bus.bus_type == 'vip' %}
+        <span><span style="display:inline-block;width:12px;height:12px;background:linear-gradient(145deg,#fff8e1,#ffecb3);border:1.5px solid #f9a825;border-radius:3px;vertical-align:middle;margin-right:3px;"></span> VIP <strong style="color:#e65100;">+{{ vip_surcharge }} {{ country.currency }}</strong></span>
+        {% else %}
+        <span><span style="display:inline-block;width:12px;height:12px;background:linear-gradient(145deg,#e8f5e9,#c8e6c9);border:1.5px solid #2e7d32;border-radius:3px;vertical-align:middle;margin-right:3px;"></span> {{ _('Available') }} <strong style="color:var(--flag-1);">{{ route.price|currency }}</strong></span>
+        {% endif %}
+        <span><span style="display:inline-block;width:12px;height:12px;background:#f5f5f5;border:1.5px solid #e0e0e0;border-radius:3px;vertical-align:middle;margin-right:3px;"></span> {{ _('Taken') }}</span>
+        <span><span style="display:inline-block;width:12px;height:12px;background:linear-gradient(145deg,#e3f2fd,#bbdefb);border:1.5px solid #1565c0;border-radius:3px;vertical-align:middle;margin-right:3px;"></span> {{ _('Selected') }}</span>
+        {% if bus.bus_type == 'vip' %}
+        <span><span style="display:inline-block;width:12px;height:12px;background:linear-gradient(145deg,#e8f5e9,#c8e6c9);border:1.5px solid #2e7d32;border-radius:3px;vertical-align:middle;margin-right:3px;"></span> {{ _('Standard') }} <strong style="color:var(--flag-1);">{{ route.price|currency }}</strong></span>
+        {% endif %}
+    </div>
+
+    <div style="max-width:400px; margin:0 auto;">
+        <div style="display:flex; align-items:center; gap:6px; margin-bottom:6px;">
+            <div style="flex:1; height:1.5px; background:linear-gradient(90deg,transparent,var(--flag-1));"></div>
+            <div style="font-size:8px; font-weight:800; color:var(--flag-1); letter-spacing:2px;">{{ _('FRONT') }}</div>
+            <div style="flex:1; height:1.5px; background:linear-gradient(90deg,var(--flag-1),transparent);"></div>
+        </div>
+
+        <div style="display:grid; grid-template-columns:1fr 1fr; gap:4px; margin-bottom:6px;">
+            <div class="driver-area">
+                <span style="font-size:14px;"><i class="fas fa-steering-wheel" style="color:var(--flag-3);"></i></span>
+                <div>
+                    <div style="font-size:8px; font-weight:700;">{{ _('DRIVER') }}</div>
+                    <div style="font-size:7px; opacity:0.5;">{{ _('cabin') }}</div>
+                </div>
+            </div>
+            <div class="door-front">
+                <i class="fas fa-door-open"></i> {{ _('FRONT') }}<br>{{ _('STAIRS') }}
+            </div>
+        </div>
+
+        <div class="bus-body">
+            <div style="display:flex; justify-content:space-between; font-size:7px; color:#999; padding:0 2px 4px;">
+                <span>{{ _('LEFT') }}</span>
+                {% if cols == 4 %}
+                <span style="flex:2; text-align:center; color:#ccc; font-size:6px;">{{ _('WALKWAY') }}</span>
+                <span style="flex:2;">{{ _('RIGHT') }}</span>
+                {% elif cols == 7 %}
+                <span>&nbsp;</span><span>&nbsp;</span>
+                <span style="color:#ccc; font-size:6px;">{{ _('WALKWAY') }}</span>
+                <span>&nbsp;</span><span>{{ _('RIGHT') }}</span>
+                {% else %}
+                <span>&nbsp;</span><span style="color:#ccc; font-size:6px;">{{ _('WALKWAY') }}</span><span>&nbsp;</span><span>{{ _('RIGHT') }}</span>
+                {% endif %}
+            </div>
+            {% set total_rows = layout|length %}
+            {% set ns = namespace(row_num=0) %}
+            {% for row in layout %}
+            {% set ns.row_num = ns.row_num + 1 %}
+            <div class="grid-row" style="grid-template-columns:{{ grid_style }};">
+                {% for cell in row %}
+                {% if cell is not none and 'n' in cell %}
+                    {% set num = cell['n'] %}
+                    {% set cls = cell['c'] %}
+                    {% set is_taken = num in taken %}
+                    <div class="seat-{{ cls }} {% if is_taken %}seat-taken taken{% endif %}"
+                         data-num="{{ num }}" data-class="{{ cls }}"
+                         onclick="{% if not is_taken %}selectSeat(this, {{ num }}){% endif %}">
+                        {% if is_taken %}<i class="fas fa-times" style="font-size:7px;"></i>{% else %}{{ num }}{% endif %}
+                    </div>
+                {% elif cell is not none and 'door' in cell %}
+                    <div class="door-rear">
+                        <i class="fas fa-door-closed"></i> {{ _('REAR') }}
+                    </div>
+                {% else %}
+                    <div class="aisle"></div>
+                {% endif %}
+                {% endfor %}
+            </div>
+            {% if ns.row_num == (total_rows // 2) and total_rows > 4 %}
+            <div class="emergency-strip">
+                <i class="fas fa-triangle-exclamation" style="color:#e65100; font-size:8px;"></i>
+                <span style="font-size:7px; font-weight:700; color:#e65100; letter-spacing:0.5px;">{{ _('EMERGENCY EXIT') }}</span>
+            </div>
+            {% endif %}
+            {% endfor %}
+        </div>
+
+        <div style="display:flex; align-items:center; gap:6px; margin-top:6px;">
+            <div class="toilet-area" style="flex:1;">
+                <i class="fas fa-restroom"></i> {{ _('TOILET') }}
+            </div>
+        </div>
+        <div style="display:flex; align-items:center; gap:6px; margin-top:4px;">
+            <div style="flex:1; height:1.5px; background:linear-gradient(90deg,transparent,var(--flag-2));"></div>
+            <div style="font-size:8px; font-weight:800; color:var(--flag-2); letter-spacing:2px;">{{ _('BACK') }}</div>
+            <div style="flex:1; height:1.5px; background:linear-gradient(90deg,var(--flag-2),transparent);"></div>
+        </div>
+    </div>
+
+    <div id="seatInfo" style="display:none; margin-top:10px; text-align:center;">
+        <div style="padding:10px; background:linear-gradient(135deg,#f0fdf4,#e8f5e9); border-radius:8px;">
+            <div style="font-size:12px; color:#444;">
+                <i class="fas fa-check-circle" style="color:var(--flag-1);"></i>
+                {{ _('Seat:') }} <strong id="seatDisplay"></strong>
+                <span id="classDisplay" style="margin-left:4px;"></span>
+            </div>
+            <div style="font-size:20px; font-weight:900; color:var(--flag-1); margin-top:4px;" id="totalDisplay"></div>
+            <div style="font-size:10px; color:#888; margin-top:1px;">{{ _('Total payable') }}</div>
+            <button id="continueBtn" class="btn btn-primary btn-sm" style="min-width:140px; margin-top:6px; font-size:12px; padding:6px 14px;" onclick="proceedWithSeat()">
+                <i class="fas fa-arrow-right"></i> {{ _('Continue') }}
+            </button>
+        </div>
+    </div>
+</div>
+
+

@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Agency Login') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:400px; margin:60px auto;">
+    <div class="card">
+        <div style="text-align:center; margin-bottom:20px;">
+            <div style="font-size:40px;"><i class="fas fa-building" style="color:var(--flag-1);"></i></div>
+            <h2 class="card-title" style="margin-bottom:0;">{{ _('Agency Portal') }}</h2>
+            <p style="color:#888; font-size:13px;">{{ _('Sign in with your agency name and password') }}</p>
+            <p style="color:var(--flag-1); font-size:14px; font-weight:600; margin-top:10px;"><i class="fas fa-globe"></i> {{ _(country.name) }}</p>
+            <p style="color:#aaa; font-size:11px; margin-top:2px;">{{ _('Login searches within this country. Switch country above if needed.') }}</p>
+        </div>
+        <form method="POST">
+            <div class="form-group">
+                <label>{{ _('Agency Name') }}</label>
+                <input type="text" name="name" class="form-control" required placeholder="{{ _('e.g. Buca Travel') }}">
+            </div>
+            <div class="form-group">
+                <label>{{ _('Password') }}</label>
+                <input type="password" name="password" class="form-control pw-field" required>
+            </div>
+            <div style="text-align:right; margin-bottom:10px;">
+                <label class="pw-toggle"><input type="checkbox" onchange="toggleAllPasswords(this)"> {{ _('Show password') }}</label>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">{{ _('Sign In') }}</button>
+        </form>
+        <div style="margin-top:16px; text-align:center; font-size:13px;">
+            <a href="{{ url_for('agency_forgot_password') }}" style="color:#e74c3c; font-size:13px;">{{ _('Forgot password?') }}</a>
+        </div>
+        <div style="margin-top:8px; text-align:center; font-size:13px;">
+            {{ _('New agency?') }} <a href="{{ url_for('agency_register') }}" style="color:var(--flag-1); font-weight:600;">{{ _('Register here') }}</a>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,52 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 400 120" width="400" height="120">
+  <defs>
+    <filter id="shadow" x="-5%" y="-5%" width="120%" height="130%">
+      <feDropShadow dx="0" dy="2" stdDeviation="3" flood-color="rgba(0,0,0,0.12)"/>
+    </filter>
+  </defs>
+
+  <!-- Map area -->
+  <g filter="url(#shadow)">
+    <!-- Africa continent silhouette -->
+    <path d="M 50 14
+             L 44 16 L 38 18 L 32 22 L 28 26 L 24 30 L 22 34
+             L 24 38 L 26 40 L 30 42 L 34 44 L 38 44 L 42 42
+             L 46 40 L 48 38 L 49 42 L 47 46 L 47 50 L 49 54
+             L 52 58 L 54 62 L 56 66 L 58 70 L 60 74 L 63 78
+             L 67 80 L 71 78 L 74 76 L 76 72 L 78 68 L 80 64
+             L 82 60 L 84 56 L 85 52 L 87 48 L 89 44 L 92 40
+             L 93 36 L 91 32 L 88 28 L 84 24 L 80 20 L 78 16
+             L 76 12 L 72 8 L 68 6 L 64 4 L 58 6 L 52 10 Z"
+          fill="#2d3436"/>
+    <!-- Madagascar -->
+    <path d="M 86 78 L 90 78 L 90 84 L 86 82 Z" fill="#2d3436"/>
+
+    <!-- Bus icon on the map -->
+    <g transform="translate(36,34)">
+      <rect x="0" y="0" width="44" height="18" rx="4" fill="#e17055"/>
+      <rect x="32" y="0" width="10" height="8" rx="2" fill="#74b9ff" opacity="0.7"/>
+      <rect x="5" y="0" width="8" height="8" rx="2" fill="#74b9ff" opacity="0.5"/>
+      <rect x="16" y="0" width="8" height="8" rx="2" fill="#74b9ff" opacity="0.5"/>
+      <rect x="27" y="0" width="3" height="8" rx="1" fill="#74b9ff" opacity="0.5"/>
+      <circle cx="10" cy="21" r="4" fill="#333"/>
+      <circle cx="10" cy="21" r="2" fill="#888"/>
+      <circle cx="34" cy="21" r="4" fill="#333"/>
+      <circle cx="34" cy="21" r="2" fill="#888"/>
+      <!-- Yellow stripe -->
+      <rect x="0" y="14" width="44" height="2" fill="#fcd116" opacity="0.6"/>
+    </g>
+  </g>
+
+  <!-- Text -->
+  <text x="175" y="55" font-family="'Segoe UI',Arial,Helvetica,sans-serif" font-size="42" font-weight="900" letter-spacing="1">
+    <tspan fill="#2d3436">AFRI</tspan><tspan fill="#e17055">Trans</tspan>
+  </text>
+  <text x="180" y="80" font-family="'Segoe UI',Arial,Helvetica,sans-serif" font-size="13" fill="#888" font-weight="600" letter-spacing="4.5">
+    TRANSPORT
+  </text>
+
+  <!-- Tagline -->
+  <text x="180" y="95" font-family="'Segoe UI',Arial,Helvetica,sans-serif" font-size="9" fill="#aaa" font-weight="400" letter-spacing="2">
+    BOOK YOUR JOURNEY ACROSS AFRICA
+  </text>
+</svg>

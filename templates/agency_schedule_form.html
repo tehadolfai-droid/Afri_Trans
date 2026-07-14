@@ -1,0 +1,50 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Schedule Trip') }} - {{ agency.name }}{% endblock %}
+{% block content %}
+<div style="max-width:500px; margin:0 auto;">
+    <div class="card">
+        <h2 class="card-title">{% if edit_mode %}<i class="fas fa-pen" style="color:var(--flag-1);"></i> {{ _('Edit Trip') }}{% else %}<i class="fas fa-plus" style="color:var(--flag-1);"></i> {{ _('Schedule a Trip') }}{% endif %}</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>{{ _('Route') }}</label>
+                <select name="route_id" class="form-control" required>
+                    <option value="">{{ _('Choose route...') }}</option>
+                    {% for r in routes %}
+                    <option value="{{ r.id }}" {% if schedule and schedule.route_id == r.id %}selected{% endif %}>{{ r.from }} &rarr; {{ r.to }} ({{ r.price|currency }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="form-group">
+                <label>{{ _('Bus') }}</label>
+                <select name="bus_id" class="form-control" required>
+                    <option value="">{{ _('Choose bus...') }}</option>
+                    {% for b in buses %}
+                    <option value="{{ b.id }}" {% if schedule and schedule.bus_id == b.id %}selected{% endif %}>{{ b.plate }} &mdash; {{ b.bus_type|upper }} ({{ b.capacity }} {{ _('seats') }})</option>
+                    {% endfor %}
+                </select>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>{{ _('Date') }}</label>
+                    <input type="date" name="date" class="form-control" required value="{{ schedule.date if schedule else '' }}">
+                </div>
+                <div class="form-group">
+                    <label>{{ _('Departure Time') }}</label>
+                    <input type="time" name="time" class="form-control" required value="{{ schedule.time if schedule else '' }}">
+                </div>
+            </div>
+            <div style="background:#f8f9fa; border-radius:8px; padding:12px; margin-bottom:12px;">
+                <div style="font-size:12px; color:#888;">{{ _('The system will auto-detect the travel period from the time:') }}</div>
+                <div style="display:flex; gap:14px; font-size:12px; margin-top:6px;">
+                    {% for p in periods %}
+                    <span><i class="fas {{ p.icon }}"></i> {{ _(p.label) }} ({{ p.range }})</span>
+                    {% endfor %}
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">
+                <i class="fas fa-check"></i> {% if edit_mode %}{{ _('Save Changes') }}{% else %}{{ _('Schedule Trip') }}{% endif %}
+            </button>
+        </form>
+    </div>
+</div>
+{% endblock %}

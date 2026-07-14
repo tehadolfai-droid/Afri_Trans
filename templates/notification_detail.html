@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Announcement') }} - AFRI Trans{% endblock %}
+{% block content %}
+<a href="{{ url_for('notifications') }}" style="display:inline-block; margin-bottom:16px; color:var(--flag-1); text-decoration:none; font-size:14px;">&larr; {{ _('Back to Notifications') }}</a>
+
+<div class="card" style="max-width:640px; margin:0 auto;">
+    <div style="display:flex; align-items:center; gap:14px; margin-bottom:20px;">
+        <div style="width:48px; height:48px; border-radius:50%; background:#e8f5e9; display:flex; align-items:center; justify-content:center; flex-shrink:0;">
+            <i class="fas fa-bullhorn" style="color:var(--flag-1); font-size:20px;"></i>
+        </div>
+        <div>
+            <div style="font-size:13px; color:#999;">{{ _('Announcement from') }}</div>
+            <div style="font-size:18px; font-weight:700; color:#1a1a2e; margin-top:2px;">{{ ann.agency_name }}</div>
+        </div>
+    </div>
+    <div style="display:flex; align-items:center; gap:8px; margin-bottom:16px;">
+        <span style="display:inline-block; padding:3px 12px; border-radius:20px; font-size:10px; font-weight:800;
+            {% if ann.badge == 'NEW' %}background:#e3f2fd; color:#1565c0;
+            {% elif ann.badge == 'PROMO' %}background:#fce4ec; color:#c62828;
+            {% elif ann.badge == 'UPDATE' %}background:#fff3e0; color:#e65100;
+            {% else %}background:#f3e5f5; color:#7b1fa2;
+            {% endif %}">{{ ann.badge }}</span>
+        {% if ann.created_at[:10] == today %}<span class="badge badge-green">{{ _('NEW') }}</span>{% endif %}
+    </div>
+    <div style="font-size:16px; line-height:1.7; color:#333; margin-bottom:20px; white-space:pre-wrap;">{{ ann_msg(ann) }}</div>
+    <div style="font-size:12px; color:#999; border-top:1px solid #f0f0f0; padding-top:16px; display:flex; justify-content:space-between; align-items:center;">
+        <span><i class="far fa-clock"></i> {{ ann.created_at }}</span>
+        {% if agency and agency.get('phone') %}
+        <span><i class="fas fa-phone"></i> {{ agency.phone }}</span>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

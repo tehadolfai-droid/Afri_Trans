@@ -1,0 +1,92 @@
+<div class="card card-accent" style="margin-bottom:8px;">
+    <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
+        <div style="background:linear-gradient(135deg,var(--flag-1),#00604a); color:#fff; width:30px; height:30px; border-radius:7px; display:flex; align-items:center; justify-content:center; font-size:14px;"><i class="fas fa-bus"></i></div>
+        <div>
+            <div style="font-weight:700; font-size:13px;">{{ route.from }} → {{ route.to }}</div>
+            <div style="color:#888; font-size:11px; margin-top:1px;">
+                <strong>{{ agency.name }}</strong> &bull; {{ s.date }} {{ _('at') }} {{ s.time }} &bull; {{ bus.plate }}
+                <span class="badge {% if bus.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}" style="font-size:9px;">{{ bus.bus_type|upper }}</span>
+            </div>
+        </div>
+        <div style="margin-left:auto; text-align:right;">
+            <div style="font-size:10px; color:#888;">{{ _('Price') }}</div>
+            <div style="font-size:16px; font-weight:900; color:var(--flag-1);">{{ ((route.price + vip_surcharge) if bus.bus_type == 'vip' else route.price)|currency }}</div>
+        </div>
+    </div>
+</div>
+
+<div style="max-width:400px; margin:0 auto;">
+    <div class="card" style="border:1px solid #e8e8e8;">
+        <div style="font-weight:700; font-size:12px; margin-bottom:8px; display:flex; align-items:center; gap:6px;">
+            <i class="fas fa-pen" style="color:var(--flag-1);"></i> {{ _('Passenger Details') }}
+        </div>
+        {% if selected_seat %}
+        <div style="background:linear-gradient(135deg,#e3f2fd,#bbdefb); border-radius:8px; padding:8px 12px; margin-bottom:10px; font-size:11px; color:#1565c0; display:flex; align-items:center; gap:8px;">
+            <i class="fas fa-couch" style="font-size:14px;"></i>
+            {{ _('Seat') }} <strong>{{ selected_seat }}</strong> — {{ ((route.price + vip_surcharge) if bus.bus_type == 'vip' else route.price)|currency }}
+        </div>
+        {% endif %}
+
+        {% set base_price = route.price + (vip_surcharge if bus.bus_type == 'vip' else 0) %}
+        {% set luggage_enabled = route.get('luggage_enabled', False) %}
+        {% set luggage_ppkg = route.get('luggage_price_per_kg', 0) %}
+
+        <form id="passengerForm" onsubmit="return submitBooking(event)">
+            <input type="hidden" name="seat" value="{{ selected_seat }}">
+            <input type="hidden" name="sid" value="{{ s.id }}">
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:11px;">{{ _('Full Name') }} *</label>
+                <input type="text" name="name" class="form-control" required placeholder="{{ _('e.g. John Mbarga') }}" style="font-size:12px; padding:6px 8px;">
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:11px;">{{ _('Phone Number') }} *</label>
+                <input type="tel" name="phone" class="form-control" required placeholder="{{ _('e.g. 677123456') }}" style="font-size:12px; padding:6px 8px;">
+                <div style="font-size:10px; color:#999; margin-top:2px;">
+                    <i class="fas fa-mobile-screen"></i> {{ _('Your ticket will be sent to this number via WhatsApp') }}
+                </div>
+            </div>
+            <div class="form-group" style="margin-bottom:8px;">
+                <label style="font-size:11px;">{{ _('National ID / Passport Number') }} *</label>
+                <input type="text" name="id_number" class="form-control" required placeholder="{{ _('e.g. CM-123456789') }}" style="font-size:12px; padding:6px 8px;">
+            </div>
+
+            {% if luggage_enabled %}
+            <div style="background:#f0f4f8; border-radius:8px; padding:10px; margin-bottom:10px;">
+                <label style="display:flex; align-items:center; gap:8px; cursor:pointer; font-weight:600; font-size:12px;">
+                    <input type="checkbox" name="has_luggage" id="luggageCheck" style="width:16px;height:16px;" onchange="toggleLuggage()">
+                    <i class="fas fa-suitcase" style="color:#e65100;"></i> {{ _('I have luggage') }}
+                </label>
+                <div style="font-size:10px; color:#888; margin:2px 0 0 24px;">{{ _('Price:') }} {{ luggage_ppkg|currency }} / {{ _('kg') }}</div>
+                <div id="luggageWeightField" style="display:none; margin-top:6px; margin-left:24px;">
+                    <label style="font-size:11px; font-weight:500;">{{ _('Total weight (kg)') }} *</label>
+                    <input type="number" name="luggage_weight" id="luggageWeight" class="form-control" min="0" step="0.5" placeholder="{{ _('e.g. 10') }}" style="max-width:120px; font-size:12px; padding:4px 8px;" oninput="updateTotal()">
+                </div>
+            </div>
+            {% endif %}
+
+            <div style="background:linear-gradient(135deg,#f0fdf4,#e8f5e9); border-radius:8px; padding:10px 14px; margin-bottom:10px;">
+                <div id="luggageBreakdown" style="display:none; font-size:11px; color:#555; margin-bottom:6px; padding-bottom:6px; border-bottom:1px dashed #c8e6c9;">
+                    <div style="display:flex; justify-content:space-between;">
+                        <span>{{ _('Fare') }} <span id="luggageWeightDisplay"></span></span>
+                        <span id="luggageFeeDisplay"></span>
+                    </div>
+                </div>
+                <div style="display:flex; justify-content:space-between; align-items:center;">
+                    <div>
+                        <div style="font-size:10px; color:#555;">{{ _('Total') }}</div>
+                        <div style="font-size:20px; font-weight:900; color:var(--flag-1);" id="totalDisplay">{{ base_price|currency }}</div>
+                    </div>
+                </div>
+            </div>
+
+            <div style="display:flex; gap:8px;">
+                <button type="button" class="btn" style="flex:1; font-size:12px; padding:6px 10px;" onclick="window.openStep(2)"><i class="fas fa-arrow-left"></i> {{ _('Back') }}</button>
+                <button type="submit" class="btn btn-success" style="flex:2; font-size:12px; padding:6px 10px;" id="submitBtn">
+                    <i class="fas fa-credit-card"></i> {{ _('Pay') }}
+                </button>
+            </div>
+        </form>
+    </div>
+</div>
+
+

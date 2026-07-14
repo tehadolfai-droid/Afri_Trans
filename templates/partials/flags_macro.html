@@ -1,0 +1,9 @@
+{# Macro: renders country select dropdown with local names #}
+{% macro country_select(name, countries, selected='') -%}
+<select name="{{ name }}" id="{{ name }}" class="country-select" required>
+    <option value="">Select country</option>
+    {% for code, label in countries %}
+    <option value="{{ code }}" {% if code == selected %}selected{% endif %}>{{ label }}</option>
+    {% endfor %}
+</select>
+{%- endmacro %}

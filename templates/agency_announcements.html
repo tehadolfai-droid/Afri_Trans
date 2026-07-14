@@ -1,0 +1,55 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Announcements') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:650px; margin:0 auto;">
+    <div class="card" style="margin-bottom:20px;">
+        <h2 class="card-title"><i class="fas fa-bullhorn" style="color:var(--flag-1);"></i> {{ _('Post an Announcement') }}</h2>
+        <form method="POST">
+            <div class="form-group">
+                <label>{{ _('Message') }}</label>
+                <textarea name="message" class="form-control" rows="3" required placeholder="{{ _('e.g. Free WiFi now available on all our buses!') }}" style="resize:vertical;"></textarea>
+            </div>
+            <div class="form-group">
+                <label>{{ _('Badge') }}</label>
+                <select name="badge" class="form-control">
+                    <option value="NEW">{{ _('NEW') }}</option>
+                    <option value="PROMO">{{ _('PROMO') }}</option>
+                    <option value="UPDATE">{{ _('UPDATE') }}</option>
+                    <option value="INFO">{{ _('INFO') }}</option>
+                </select>
+                <small style="color:#888;">{{ _('A coloured tag that appears next to your message') }}</small>
+            </div>
+            <button type="submit" class="btn btn-primary"><i class="fas fa-paper-plane"></i> {{ _('Post Announcement') }}</button>
+        </form>
+    </div>
+
+    <div class="card">
+        <h3 class="card-title"><i class="fas fa-history"></i> {{ _('Your Announcements') }}</h3>
+        {% if announcements %}
+        {% for ann in announcements %}
+        <div style="display:flex; align-items:flex-start; gap:12px; padding:14px 0; border-bottom:1px solid #f0f0f0;">
+            <div style="flex-shrink:0;">
+                <span style="display:inline-block; padding:3px 10px; border-radius:20px; font-size:10px; font-weight:800; letter-spacing:1px;
+                    {% if ann.badge == 'NEW' %}background:#e3f2fd; color:#1565c0;
+                    {% elif ann.badge == 'PROMO' %}background:#fce4ec; color:#c62828;
+                    {% elif ann.badge == 'UPDATE' %}background:#fff3e0; color:#e65100;
+                    {% else %}background:#f3e5f5; color:#7b1fa2;
+                    {% endif %}">
+                    {{ ann.badge }}
+                </span>
+            </div>
+            <div style="flex:1;">
+                <div style="font-size:14px; color:#1a1a2e;">{{ ann_msg(ann) }}</div>
+                <div style="font-size:11px; color:#999; margin-top:4px;">{{ ann.created_at }}</div>
+            </div>
+            <div>
+                <a href="{{ url_for('agency_announcement_delete', aid=ann.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('{{ _('Remove this announcement?') }}')"><i class="fas fa-times"></i></a>
+            </div>
+        </div>
+        {% endfor %}
+        {% else %}
+        <p style="color:#999; text-align:center; padding:20px 0;">{{ _('No announcements yet.') }}</p>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,1461 @@
+{
+  "agencies": [
+    {
+      "id": 1,
+      "name": "ADOLF.AI",
+      "locations": [
+        "Yaoundé",
+        "Douala",
+        "Bafoussam",
+        "Bamenda",
+        "Garoua",
+        "Maroua",
+        "Ngaoundéré",
+        "Buéa",
+        "Limbé",
+        "Kribi",
+        "Bertoua",
+        "Ebolowa",
+        "Dschang",
+        "Foumban",
+        "Kumba",
+        "Tiko",
+        "Bafang"
+      ],
+      "password": "scrypt:32768:8:1$udN6LFuNx6el9JlH$9c92edaa19178082b9c8ad333307e8a689d6925f3dfbc266d29282511ceb16e7fbfb7ee9973117cca7e5fe4922d0e491b957587e84151e984a9c659ac0d63e2e",
+      "created_at": "2026-05-29",
+      "approved": true
+    },
+    {
+      "id": 2,
+      "name": "TestAgency",
+      "locations": [
+        "Douala"
+      ],
+      "password": "test123",
+      "created_at": "2026-05-29"
+    },
+    {
+      "id": 3,
+      "name": "Teh AdolfAI",
+      "locations": [
+        "Yaoundé",
+        "Douala",
+        "Bafoussam",
+        "Bamenda",
+        "Garoua",
+        "Maroua",
+        "Ngaoundéré",
+        "Buéa",
+        "Limbé",
+        "Kribi",
+        "Bertoua",
+        "Ebolowa",
+        "Dschang",
+        "Foumban",
+        "Kumba",
+        "Tiko",
+        "Bafang"
+      ],
+      "password": "scrypt:32768:8:1$uL0SoAaMzyHEq1HG$39760989926f6ff8bf45b459fcd8d44855ff3e287f7d5296b27d00bac09be4ef97312f3d314ae16fdc3d028ac77fea8375b7766c5d1b0fbacf1fe6d9652cdc13",
+      "created_at": "2026-05-29"
+    },
+    {
+      "id": 4,
+      "name": "dombolo",
+      "locations": [
+        "Yaoundé",
+        "Douala",
+        "Bafoussam",
+        "Bamenda",
+        "Garoua",
+        "Maroua",
+        "Ngaoundéré",
+        "Buéa",
+        "Limbé",
+        "Kribi",
+        "Bertoua",
+        "Ebolowa",
+        "Dschang",
+        "Foumban",
+        "Kumba",
+        "Tiko",
+        "Bafang"
+      ],
+      "password": "scrypt:32768:8:1$Pe9mDTbHtf1lJH7w$a944f98decdd1e7fa25d8470622b4e599174d7fe8b94395156156c48e3d3b7c1ae49cf90bb01360519ce4c7be39845a300db7e678385a77514aa4ef6c839d7a4",
+      "created_at": "2026-05-29"
+    },
+    {
+      "id": 5,
+      "name": "Go Bus Service",
+      "locations": [
+        "Yaoundé",
+        "Douala",
+        "Bamenda",
+        "Buéa",
+        "Limbé"
+      ],
+      "password": "scrypt:32768:8:1$KYUmSxu7NPwE09Mt$36abca3ded5c5310863a5784894cc9531eb36776e6f68b2793fc3afd3aefd079e2da7cd3b9c341fc9c79c2eee979cd00090a745bafadb7d5529130e634e43796",
+      "created_at": "2026-06-02"
+    },
+    {
+      "id": 6,
+      "name": "Go Bus Service",
+      "locations": [
+        "Accra",
+        "Kumasi",
+        "Takoradi",
+        "Tamale",
+        "Cape Coast",
+        "Tema",
+        "Ho",
+        "Sunyani"
+      ],
+      "password": "scrypt:32768:8:1$quD0DpEJRaSqqfYf$437305d9fc29331182900354c85d0f9a132474fe8d982d7b0d70894c0cb369d237774769956f4db7e50a3f14960906dce37d31c1beb0f76bf54552cb3f9946b8",
+      "country": "gh",
+      "created_at": "2026-06-23"
+    },
+    {
+      "id": 7,
+      "name": "bucajr",
+      "locations": [
+        "Johannesburg",
+        "Cape Town",
+        "Durban",
+        "Pretoria",
+        "Port Elizabeth",
+        "Bloemfontein",
+        "East London",
+        "Pietermaritzburg",
+        "Nelspruit",
+        "Rustenburg"
+      ],
+      "password": "scrypt:32768:8:1$92fKWctu8u98DQmb$10bc5abebcbb5a6163ade3762096858b3bd9a6224538a30a11f7f4212a45358681d14877b5925cb4c4a13ddea0d214b28bc2b4f6831d98dda7f8c7506220fe27",
+      "country": "za",
+      "created_at": "2026-06-23",
+      "approved": true
+    }
+  ],
+  "buses": [
+    {
+      "id": 1,
+      "agency_id": 1,
+      "plate": "ADO-001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 2,
+      "agency_id": 1,
+      "plate": "ADO-002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 3,
+      "agency_id": 1,
+      "plate": "ADO-003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 4,
+      "agency_id": 1,
+      "plate": "ADO-004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 5,
+      "agency_id": 1,
+      "plate": "ADO-005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 6,
+      "agency_id": 1,
+      "plate": "ADO-006",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 7,
+      "agency_id": 1,
+      "plate": "ADO-007",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 8,
+      "agency_id": 1,
+      "plate": "ADO-008",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 9,
+      "agency_id": 1,
+      "plate": "ADO-009",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 10,
+      "agency_id": 1,
+      "plate": "ADO-010",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 11,
+      "agency_id": 1,
+      "plate": "ADO-011",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 12,
+      "agency_id": 1,
+      "plate": "ADO-012",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 13,
+      "agency_id": 1,
+      "plate": "ADO-013",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 14,
+      "agency_id": 1,
+      "plate": "ADO-014",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 15,
+      "agency_id": 1,
+      "plate": "ADO-015",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 16,
+      "agency_id": 1,
+      "plate": "ADO-016",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 17,
+      "agency_id": 1,
+      "plate": "ADO-017",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 18,
+      "agency_id": 1,
+      "plate": "ADO-018",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 19,
+      "agency_id": 1,
+      "plate": "ADO-019",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 20,
+      "agency_id": 1,
+      "plate": "ADO-020",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 21,
+      "agency_id": 1,
+      "plate": "ADO-021",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 22,
+      "agency_id": 1,
+      "plate": "ADO-022",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 23,
+      "agency_id": 1,
+      "plate": "ADO-023",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 24,
+      "agency_id": 1,
+      "plate": "ADO-024",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 25,
+      "agency_id": 2,
+      "plate": "TES-001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 26,
+      "agency_id": 2,
+      "plate": "TES-002",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 27,
+      "agency_id": 3,
+      "plate": "TEH-001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 28,
+      "agency_id": 3,
+      "plate": "TEH-002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 29,
+      "agency_id": 3,
+      "plate": "TEH-003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 30,
+      "agency_id": 3,
+      "plate": "TEH-004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 31,
+      "agency_id": 3,
+      "plate": "TEH-005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 32,
+      "agency_id": 3,
+      "plate": "TEH-006",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 33,
+      "agency_id": 3,
+      "plate": "TEH-007",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 34,
+      "agency_id": 3,
+      "plate": "TEH-008",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 35,
+      "agency_id": 3,
+      "plate": "TEH-009",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 36,
+      "agency_id": 3,
+      "plate": "TEH-010",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 37,
+      "agency_id": 3,
+      "plate": "TEH-011",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 38,
+      "agency_id": 3,
+      "plate": "TEH-012",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 39,
+      "agency_id": 3,
+      "plate": "TEH-013",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 40,
+      "agency_id": 3,
+      "plate": "TEH-014",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 41,
+      "agency_id": 3,
+      "plate": "TEH-015",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 42,
+      "agency_id": 3,
+      "plate": "TEH-016",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 43,
+      "agency_id": 3,
+      "plate": "TEH-017",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 44,
+      "agency_id": 3,
+      "plate": "TEH-018",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 45,
+      "agency_id": 3,
+      "plate": "TEH-019",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 46,
+      "agency_id": 3,
+      "plate": "TEH-020",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 47,
+      "agency_id": 4,
+      "plate": "DOM-001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 48,
+      "agency_id": 4,
+      "plate": "DOM-002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 49,
+      "agency_id": 4,
+      "plate": "DOM-003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 50,
+      "agency_id": 4,
+      "plate": "DOM-004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 51,
+      "agency_id": 4,
+      "plate": "DOM-005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 52,
+      "agency_id": 4,
+      "plate": "DOM-006",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 53,
+      "agency_id": 4,
+      "plate": "DOM-007",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 54,
+      "agency_id": 4,
+      "plate": "DOM-008",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 55,
+      "agency_id": 4,
+      "plate": "DOM-009",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 56,
+      "agency_id": 4,
+      "plate": "DOM-010",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 57,
+      "agency_id": 4,
+      "plate": "DOM-011",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 58,
+      "agency_id": 4,
+      "plate": "DOM-012",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 59,
+      "agency_id": 4,
+      "plate": "DOM-013",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 60,
+      "agency_id": 4,
+      "plate": "DOM-014",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 61,
+      "agency_id": 4,
+      "plate": "DOM-015",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 62,
+      "agency_id": 4,
+      "plate": "DOM-016",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 63,
+      "agency_id": 4,
+      "plate": "DOM-017",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 64,
+      "agency_id": 4,
+      "plate": "DOM-018",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 65,
+      "agency_id": 4,
+      "plate": "DOM-019",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 66,
+      "agency_id": 4,
+      "plate": "DOM-020",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 67,
+      "agency_id": 4,
+      "plate": "DOM-021",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 68,
+      "agency_id": 4,
+      "plate": "DOM-022",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 69,
+      "agency_id": 4,
+      "plate": "DOM-023",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 70,
+      "agency_id": 4,
+      "plate": "DOM-024",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 71,
+      "agency_id": 4,
+      "plate": "DOM-025",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 72,
+      "agency_id": 4,
+      "plate": "DOM-026",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 73,
+      "agency_id": 4,
+      "plate": "DOM-027",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 74,
+      "agency_id": 5,
+      "plate": "GO -001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 75,
+      "agency_id": 5,
+      "plate": "GO -002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 76,
+      "agency_id": 5,
+      "plate": "GO -003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 77,
+      "agency_id": 5,
+      "plate": "GO -004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 78,
+      "agency_id": 5,
+      "plate": "GO -005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 79,
+      "agency_id": 5,
+      "plate": "GO -006",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 80,
+      "agency_id": 6,
+      "plate": "GO -001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 81,
+      "agency_id": 6,
+      "plate": "GO -002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 82,
+      "agency_id": 6,
+      "plate": "GO -003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 83,
+      "agency_id": 6,
+      "plate": "GO -004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 84,
+      "agency_id": 6,
+      "plate": "GO -005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 85,
+      "agency_id": 6,
+      "plate": "GO -006",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 86,
+      "agency_id": 6,
+      "plate": "GO -007",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 87,
+      "agency_id": 7,
+      "plate": "BUC-001",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 88,
+      "agency_id": 7,
+      "plate": "BUC-002",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 89,
+      "agency_id": 7,
+      "plate": "BUC-003",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 90,
+      "agency_id": 7,
+      "plate": "BUC-004",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 91,
+      "agency_id": 7,
+      "plate": "BUC-005",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 92,
+      "agency_id": 7,
+      "plate": "BUC-006",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 93,
+      "agency_id": 7,
+      "plate": "BUC-007",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 94,
+      "agency_id": 7,
+      "plate": "BUC-008",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 95,
+      "agency_id": 7,
+      "plate": "BUC-009",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 96,
+      "agency_id": 7,
+      "plate": "BUC-010",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 97,
+      "agency_id": 7,
+      "plate": "BUC-011",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 98,
+      "agency_id": 7,
+      "plate": "BUC-012",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 99,
+      "agency_id": 7,
+      "plate": "BUC-013",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 100,
+      "agency_id": 7,
+      "plate": "BUC-014",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 101,
+      "agency_id": 7,
+      "plate": "BUC-015",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 102,
+      "agency_id": 7,
+      "plate": "BUC-016",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 103,
+      "agency_id": 7,
+      "plate": "BUC-017",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 104,
+      "agency_id": 7,
+      "plate": "BUC-018",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 105,
+      "agency_id": 7,
+      "plate": "BUC-019",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 106,
+      "agency_id": 7,
+      "plate": "BUC-020",
+      "capacity": 71,
+      "bus_type": "standard",
+      "status": "available"
+    },
+    {
+      "id": 107,
+      "agency_id": 7,
+      "plate": "BUC-021",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 108,
+      "agency_id": 7,
+      "plate": "BUC-022",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 109,
+      "agency_id": 7,
+      "plate": "BUC-023",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 110,
+      "agency_id": 7,
+      "plate": "BUC-024",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    },
+    {
+      "id": 111,
+      "agency_id": 7,
+      "plate": "BUC-025",
+      "capacity": 71,
+      "bus_type": "vip",
+      "status": "available"
+    }
+  ],
+  "routes": [
+    {
+      "id": 1,
+      "agency_id": 1,
+      "from": "Yaoundé",
+      "to": "Douala",
+      "duration": "5h 30m",
+      "price": 3000
+    },
+    {
+      "id": 2,
+      "agency_id": 1,
+      "from": "Yaoundé",
+      "to": "Bamenda",
+      "duration": "10h",
+      "price": 8000
+    },
+    {
+      "id": 3,
+      "agency_id": 1,
+      "from": "Buéa",
+      "to": "Bamenda",
+      "duration": "10H",
+      "price": 6500
+    },
+    {
+      "id": 4,
+      "agency_id": 1,
+      "from": "Douala",
+      "to": "Limbé",
+      "duration": "5h 30m",
+      "price": 3500
+    },
+    {
+      "id": 5,
+      "agency_id": 4,
+      "from": "Bafoussam",
+      "to": "Maroua",
+      "duration": "10h",
+      "price": 5000
+    },
+    {
+      "id": 6,
+      "agency_id": 5,
+      "from": "Buéa",
+      "to": "Yaoundé",
+      "duration": "5h 30m",
+      "price": 6500
+    },
+    {
+      "id": 7,
+      "agency_id": 1,
+      "from": "Buéa",
+      "to": "Kribi",
+      "duration": "5h 30m",
+      "price": 4000,
+      "luggage_enabled": true,
+      "luggage_price_per_kg": 500
+    },
+    {
+      "id": 8,
+      "agency_id": 1,
+      "from": "Ebolowa",
+      "to": "Kribi",
+      "duration": "5h 30m",
+      "price": 6000,
+      "luggage_enabled": true,
+      "luggage_price_per_kg": 200
+    },
+    {
+      "id": 9,
+      "agency_id": 6,
+      "from": "Tamale",
+      "to": "Accra",
+      "duration": "5h 30m",
+      "price": 5000,
+      "luggage_enabled": true,
+      "luggage_price_per_kg": 100
+    }
+  ],
+  "schedules": [
+    {
+      "id": 1,
+      "route_id": 3,
+      "bus_id": 1,
+      "date": "2026-05-29",
+      "time": "21:00",
+      "period": "night",
+      "status": "cancelled"
+    },
+    {
+      "id": 2,
+      "route_id": 3,
+      "bus_id": 21,
+      "date": "2026-05-30",
+      "time": "10:00",
+      "period": "morning",
+      "status": "completed"
+    },
+    {
+      "id": 3,
+      "route_id": 5,
+      "bus_id": 59,
+      "date": "2026-05-29",
+      "time": "10:00",
+      "period": "morning",
+      "status": "completed"
+    },
+    {
+      "id": 4,
+      "route_id": 6,
+      "bus_id": 76,
+      "date": "2026-06-02",
+      "time": "22:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 5,
+      "route_id": 2,
+      "bus_id": 11,
+      "date": "2026-06-16",
+      "time": "21:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 6,
+      "route_id": 1,
+      "bus_id": 4,
+      "date": "2026-06-17",
+      "time": "20:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 7,
+      "route_id": 7,
+      "bus_id": 2,
+      "date": "2026-06-17",
+      "time": "19:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 8,
+      "route_id": 3,
+      "bus_id": 9,
+      "date": "2026-06-18",
+      "time": "10:00",
+      "period": "morning",
+      "status": "completed"
+    },
+    {
+      "id": 9,
+      "route_id": 4,
+      "bus_id": 10,
+      "date": "2026-06-18",
+      "time": "22:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 10,
+      "route_id": 8,
+      "bus_id": 23,
+      "date": "2026-06-18",
+      "time": "20:00",
+      "period": "night",
+      "status": "completed"
+    },
+    {
+      "id": 11,
+      "route_id": 9,
+      "bus_id": 84,
+      "date": "2026-06-23",
+      "time": "20:06",
+      "period": "night",
+      "status": "active"
+    }
+  ],
+  "bookings": [
+    {
+      "id": 1,
+      "schedule_id": 1,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "seat_number": 36,
+      "booking_ref": "CM-GFX-0001",
+      "paid": true,
+      "status": "expired",
+      "created_at": "2026-05-29 11:05"
+    },
+    {
+      "id": 2,
+      "schedule_id": 2,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "seat_number": 1,
+      "booking_ref": "CM-KBP-0001",
+      "paid": true,
+      "status": "expired",
+      "created_at": "2026-05-29 11:38"
+    },
+    {
+      "id": 3,
+      "schedule_id": 2,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "seat_number": 6,
+      "booking_ref": "CM-LLB-0001",
+      "paid": true,
+      "status": "expired",
+      "created_at": "2026-05-29 11:57"
+    },
+    {
+      "id": 4,
+      "schedule_id": 1,
+      "passenger_name": "adolf",
+      "phone": "677479270",
+      "seat_number": 6,
+      "booking_ref": "CM-DZC-0001",
+      "paid": true,
+      "status": "expired",
+      "created_at": "2026-05-29 12:03"
+    },
+    {
+      "id": 5,
+      "schedule_id": 1,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "id_number": "cm378987654433545",
+      "seat_number": 31,
+      "booking_ref": "CM-GQQ-0004",
+      "paid": true,
+      "status": "cancelled",
+      "created_at": "2026-05-29 12:50"
+    },
+    {
+      "id": 6,
+      "schedule_id": 1,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "id_number": "cm378987654433545",
+      "seat_number": null,
+      "booking_ref": "CM-FTJ-0005",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-FTJ-0005-5554",
+      "created_at": "2026-05-29 13:18"
+    },
+    {
+      "id": 7,
+      "schedule_id": 3,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "id_number": "cm6569754",
+      "seat_number": 26,
+      "booking_ref": "CM-BSR-0006",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-BSR-0006-5372",
+      "created_at": "2026-05-29 14:02"
+    },
+    {
+      "id": 8,
+      "schedule_id": 1,
+      "passenger_name": "kum",
+      "phone": "677479270",
+      "id_number": "cm76542hd",
+      "seat_number": null,
+      "booking_ref": "CM-RGG-0007",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-RGG-0007-4012",
+      "created_at": "2026-05-30 07:30"
+    },
+    {
+      "id": 9,
+      "schedule_id": 2,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "237677479270",
+      "id_number": "cm378987654433545",
+      "seat_number": 61,
+      "booking_ref": "CM-IGZ-0008",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-IGZ-0008-4212",
+      "created_at": "2026-05-31 15:10"
+    },
+    {
+      "id": 10,
+      "schedule_id": 4,
+      "passenger_name": "manga",
+      "phone": "677479270",
+      "id_number": "cm76542hd",
+      "seat_number": 11,
+      "booking_ref": "CM-KSU-0009",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-KSU-0009-6889",
+      "created_at": "2026-06-02 11:18"
+    },
+    {
+      "id": 11,
+      "schedule_id": 5,
+      "passenger_name": "ayahoo",
+      "phone": "677479270",
+      "id_number": "cm76542hd",
+      "seat_number": 25,
+      "booking_ref": "CM-DJX-0010",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-DJX-0010-5238",
+      "created_at": "2026-06-16 11:46"
+    },
+    {
+      "id": 12,
+      "schedule_id": 5,
+      "passenger_name": "john",
+      "phone": "237677479270",
+      "id_number": "cm6569754",
+      "seat_number": 11,
+      "booking_ref": "CM-DVI-0011",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-DVI-0011-6359",
+      "created_at": "2026-06-16 16:19"
+    },
+    {
+      "id": 13,
+      "schedule_id": 6,
+      "passenger_name": "menga",
+      "phone": "237677479270",
+      "id_number": "cm378987654433545",
+      "seat_number": 11,
+      "booking_ref": "CM-TJV-0012",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-TJV-0012-5351",
+      "created_at": "2026-06-17 10:42"
+    },
+    {
+      "id": 14,
+      "schedule_id": 6,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "237677479270",
+      "id_number": "cm378987654433545",
+      "seat_number": 21,
+      "booking_ref": "CM-CJR-0013",
+      "paid": false,
+      "status": "expired",
+      "payment_method": null,
+      "transaction_id": null,
+      "created_at": "2026-06-17 11:11",
+      "luggage_weight": 0,
+      "luggage_fee": 0
+    },
+    {
+      "id": 15,
+      "schedule_id": 7,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "237677479270",
+      "id_number": "cm76542hd",
+      "seat_number": 51,
+      "booking_ref": "CM-NTQ-0014",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-NTQ-0014-2008",
+      "created_at": "2026-06-17 11:15",
+      "luggage_weight": 5.0,
+      "luggage_fee": 2500
+    },
+    {
+      "id": 16,
+      "schedule_id": 9,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "237677479270",
+      "id_number": "cm6569754",
+      "seat_number": 2,
+      "booking_ref": "CM-KSY-0015",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-KSY-0015-4534",
+      "created_at": "2026-06-18 10:55",
+      "luggage_weight": 0,
+      "luggage_fee": 0
+    },
+    {
+      "id": 17,
+      "schedule_id": 10,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "237677479270",
+      "id_number": "cm76542hd",
+      "seat_number": 31,
+      "booking_ref": "CM-YET-0016",
+      "paid": true,
+      "status": "expired",
+      "payment_method": "momo",
+      "transaction_id": "TXN-CM-YET-0016-9708",
+      "created_at": "2026-06-18 11:04",
+      "luggage_weight": 5.0,
+      "luggage_fee": 1000
+    },
+    {
+      "id": 18,
+      "schedule_id": 11,
+      "passenger_name": "Teh AdolfAI",
+      "phone": "677479270",
+      "id_number": "cm6569754",
+      "seat_number": 6,
+      "booking_ref": "GH-OFX-0017",
+      "paid": true,
+      "status": "confirmed",
+      "payment_method": "vodafone_cash",
+      "transaction_id": "TXN-GH-OFX-0017-3190",
+      "created_at": "2026-06-23 13:07",
+      "luggage_weight": 5.0,
+      "luggage_fee": 500
+    }
+  ],
+  "next_ref": 18
+}

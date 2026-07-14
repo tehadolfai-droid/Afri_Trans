@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Ticket') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:380px; margin:0 auto;">
+    <div class="card" style="border:1px solid var(--flag-1); border-radius:10px; overflow:hidden; padding:0; box-shadow:0 4px 16px rgba(0,0,0,0.08);">
+        {% set fc = country.flag_colors %}
+        {% set country_code = session.get('country', 'cm') %}
+        <div style="background:linear-gradient(135deg,{{ fc[0] }},{{ fc[1] if fc|length > 1 else fc[0] }}); color:#fff; padding:14px; text-align:center; position:relative; overflow:hidden;">
+            <img src="{{ url_for('static', filename='img/flags/' + country_code + '.png') }}" alt="{{ country.name }}" style="position:absolute; top:-4px; right:-4px; width:44px; height:auto; opacity:0.10; transform:rotate(8deg);">
+            <div style="display:flex; align-items:center; justify-content:center; gap:6px; font-size:15px; font-weight:900;">
+                <img src="{{ url_for('static', filename='img/flags/' + country_code + '.png') }}" alt="{{ country.name }}" style="height:16px; width:auto; border-radius:2px; box-shadow:0 1px 4px rgba(0,0,0,0.2);">
+                AFRI Trans
+            </div>
+            <div style="font-size:9px; opacity:0.7; letter-spacing:1px; margin-top:1px;">{{ _('E-TICKET • OFFICIAL') }}</div>
+            <div style="margin-top:8px; background:rgba(255,255,255,0.1); display:inline-block; padding:5px 16px; border-radius:6px; border:1px solid rgba(255,255,255,0.15);">
+                <div style="font-size:8px; letter-spacing:1px; opacity:0.6;">{{ _('REFERENCE') }}</div>
+                <div style="font-size:16px; font-weight:900; letter-spacing:2px;">{{ bk.booking_ref }}</div>
+            </div>
+        </div>
+
+        <div style="padding:0 14px; position:relative;">
+            <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin:12px 0 10px;">
+                <div>
+                    <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Departure') }}</div>
+                    <div style="font-size:13px; font-weight:700;">{{ route.from }}</div>
+                </div>
+                <div style="text-align:right;">
+                    <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Arrival') }}</div>
+                    <div style="font-size:13px; font-weight:700;">{{ route.to }}</div>
+                </div>
+            </div>
+
+            <div style="background:#f8f9fa; border-radius:8px; padding:8px 12px; display:flex; align-items:center; justify-content:center; gap:10px; flex-wrap:wrap; margin-bottom:10px; font-size:11px;">
+                <span><i class="fas fa-calendar-alt" style="color:#888;"></i> <strong>{{ s.date }}</strong></span>
+                <span style="color:var(--flag-2); font-size:12px;">→</span>
+                <span><i class="far fa-clock" style="color:#888;"></i> <strong>{{ s.time }}</strong></span>
+                <span style="color:var(--flag-2); font-size:12px;">→</span>
+                <span>{{ _(period_label) }}</span>
+            </div>
+
+            <div style="border-top:1px dashed #e0e0e0; padding-top:10px;">
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px;">
+                    <div>
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Passenger') }}</div>
+                        <div style="font-weight:600; font-size:12px;">{{ bk.passenger_name }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Phone') }}</div>
+                        <div style="font-weight:600; font-size:12px;">{{ bk.phone }}</div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:8px;">
+                    <div>
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Seat') }}</div>
+                        <div style="display:flex; align-items:center; gap:6px;">
+                            <div style="font-size:18px; font-weight:900; color:var(--flag-1);">{{ bk.seat_number }}</div>
+                            {% if bus.bus_type == 'vip' %}
+                            <span style="background:#fff8e1; color:#e65100; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700;">{{ _('VIP') }}</span>
+                            {% else %}
+                            <span style="background:#e8f5e9; color:#2e7d32; padding:1px 6px; border-radius:4px; font-size:9px; font-weight:700;">{{ _('STANDARD') }}</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Amount Paid') }}</div>
+                        <div style="font-size:13px; font-weight:800;">
+                            {{ total_price|currency }}
+                            {% if bus.bus_type == 'vip' %}
+                                <div style="font-size:10px; color:#e65100; font-weight:500;">({{ _('base') }} {{ route.price|currency }} + {{ _('VIP') }} 3,000 {{ country.currency }})</div>
+                            {% else %}
+                                <div style="font-size:10px; color:#888; font-weight:400;">{{ _('Transport:') }} {{ price|currency }}</div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:8px; margin-top:6px; padding-top:8px; border-top:1px solid #f0f0f0;">
+                    <div>
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Agency') }}</div>
+                        <div style="font-weight:500; font-size:12px;">{{ agency.name }}</div>
+                    </div>
+                    <div style="text-align:right;">
+                        <div style="font-size:9px; color:#999; text-transform:uppercase; letter-spacing:1px;">{{ _('Bus') }}</div>
+                        <div style="font-weight:500; font-size:12px;">{{ bus.plate }} <span style="color:#888; font-weight:400;">({{ bus.bus_type|upper }})</span></div>
+                    </div>
+                </div>
+                {% if luggage_fee %}
+                <div style="margin-top:6px; padding-top:6px; border-top:1px solid #f0f0f0; font-size:11px; color:#e65100; display:flex; justify-content:space-between;">
+                    <span><i class="fas fa-suitcase"></i> {{ _('Luggage') }} ({{ bk.get('luggage_weight', 0) }} kg)</span>
+                    <span style="font-weight:600;">+{{ luggage_fee|currency }}</span>
+                </div>
+                {% endif %}
+            </div>
+
+            {% if bk.id_number %}
+            <div style="margin-top:6px; font-size:10px; color:#888;">
+                {{ _('ID:') }} {{ bk.id_number }}
+            </div>
+            {% endif %}
+        </div>
+
+        <div style="background:#f8fbfa; border-top:1px dashed #e0e0e0; padding:8px 14px; text-align:center; margin-top:10px;">
+            <div style="display:flex; justify-content:center; gap:10px; font-size:10px; color:#888;">
+                <span><i class="far fa-clock" style="color:#888;"></i> {{ s.time }}</span>
+                <span style="width:1px; background:#ddd;"></span>
+                <span><i class="fas fa-calendar-alt" style="color:#888;"></i> {{ s.date }}</span>
+                <span style="width:1px; background:#ddd;"></span>
+                <span><i class="fas fa-couch" style="color:#888;"></i> {{ bk.seat_number }}</span>
+            </div>
+            <div style="margin-top:4px; font-size:10px;">
+                {% if is_expired %}
+                <span style="color:#c62828; font-weight:700;"><i class="fas fa-times-circle"></i> {{ _('TICKET EXPIRED') }}</span>
+                {% else %}
+                <span style="color:#2e7d32;"><i class="fas fa-check-circle"></i> {{ _('Valid for this departure only') }}</span>
+                {% endif %}
+            </div>
+            <div style="font-size:10px; color:#555; margin-top:4px; font-weight:500;">
+                <i class="fas fa-bus" style="color:var(--flag-1);"></i> {{ _('Show this ticket to the driver before boarding.') }}
+            </div>
+            <div style="font-size:9px; color:#aaa; margin-top:3px;">
+                {{ _('Booked on') }} {{ bk.created_at }}
+            </div>
+        </div>
+    </div>
+
+    <div style="text-align:center; margin-top:12px; display:flex; gap:8px; justify-content:center; flex-wrap:wrap;">
+        <a href="{{ url_for('ticket_pdf', ref=bk.booking_ref) }}" class="btn btn-sm" style="background:var(--flag-2); color:#fff; font-size:11px;"><i class="fas fa-file-pdf"></i> {{ _('PDF') }}</a>
+        <a href="{{ url_for('ticket_image_route', ref=bk.booking_ref) }}" download="ticket_{{ bk.booking_ref }}.png" class="btn btn-sm" style="background:var(--flag-1); color:#fff; font-size:11px;"><i class="fas fa-image"></i> {{ _('Image') }}</a>
+        <a href="{{ url_for('index') }}" class="btn btn-sm btn-primary" style="font-size:11px;"><i class="fas fa-bus"></i> {{ _('New Search') }}</a>
+    </div>
+</div>
+{% endblock %}

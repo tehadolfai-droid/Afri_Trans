@@ -1,0 +1,84 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Subscription Plans') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:650px; margin:30px auto;">
+    <div class="card" style="text-align:center; padding:24px;">
+        <div style="font-size:36px; margin-bottom:8px;"><i class="fas fa-shield-alt" style="color:var(--flag-1);"></i></div>
+        <h2 class="card-title" style="font-size:20px;">
+            {% if sub %}{{ _('Extend Your Subscription') }}{% else %}{{ _('Choose a Subscription Plan') }}{% endif %}
+        </h2>
+        {% if sub %}
+        <div style="background:#e8f5e9; border:1px solid #a5d6a7; border-radius:10px; padding:12px; margin:10px 0;">
+            <div style="font-size:13px; color:#555;">{{ _('Current subscription active until') }} <strong>{{ sub.end_date }}</strong></div>
+            <div style="font-size:12px; color:#888; margin-top:4px;">{{ _('Choose a plan below to add more time to your subscription.') }}</div>
+        </div>
+        {% else %}
+        <p style="color:#888; font-size:13px;">{{ _('Pay once and stop the 1% platform commission deduction on all your bookings.') }}</p>
+        {% endif %}
+    </div>
+
+    <div style="display:grid; grid-template-columns:repeat(3,1fr); gap:14px; margin-top:20px;">
+        <div class="card text-center" style="padding:20px;">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-calendar-alt" style="color:var(--flag-2);"></i></div>
+            <h3 style="font-size:16px; margin:6px 0;">{{ _('Monthly') }}</h3>
+            <div style="font-size:28px; font-weight:900; color:var(--flag-1); margin:8px 0;">{{ prices.monthly|currency }}</div>
+            <div style="color:#888; font-size:12px;">{{ _('per month') }}</div>
+            <div style="color:#888; font-size:11px; margin:8px 0;">{{ _('Billed monthly') }}</div>
+            <a href="{{ url_for('agency_subscribe_pay', plan='monthly') }}" class="btn btn-primary btn-sm" style="width:100%; margin-top:8px;">{{ _('Subscribe') }}</a>
+        </div>
+
+        <div class="card text-center" style="padding:20px; border-color:var(--flag-1);">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-leaf" style="color:var(--flag-1);"></i></div>
+            <h3 style="font-size:16px; margin:6px 0;">{{ _('6 Months') }}</h3>
+            <div style="font-size:28px; font-weight:900; color:var(--flag-1); margin:8px 0;">{{ prices.semiannual|currency }}</div>
+            <div style="color:#888; font-size:12px;">~{{ (prices.semiannual / 6)|round|int|currency }} / {{ _('mo') }}</div>
+            <div style="color:#888; font-size:11px; margin:8px 0;">{{ _('Save') }} ~{{ ((1 - prices.semiannual / 6 / prices.monthly) * 100)|round|int }}%</div>
+            <a href="{{ url_for('agency_subscribe_pay', plan='semiannual') }}" class="btn btn-primary btn-sm" style="width:100%; margin-top:8px;">{{ _('Subscribe') }}</a>
+        </div>
+
+        <div class="card text-center" style="padding:20px; background:#fafafa;">
+            <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-crown" style="color:var(--flag-3);"></i></div>
+            <h3 style="font-size:16px; margin:6px 0;">{{ _('Annual') }}</h3>
+            <div style="font-size:28px; font-weight:900; color:var(--flag-3); margin:8px 0;">{{ prices.annual|currency }}</div>
+            <div style="color:#888; font-size:12px;">~{{ (prices.annual / 12)|round|int|currency }} / {{ _('mo') }}</div>
+            <div style="color:#888; font-size:11px; margin:8px 0;">{{ _('Save') }} ~{{ ((1 - prices.annual / 12 / prices.monthly) * 100)|round|int }}%</div>
+            <a href="{{ url_for('agency_subscribe_pay', plan='annual') }}" class="btn btn-primary btn-sm" style="width:100%; margin-top:8px;">{{ _('Subscribe') }}</a>
+        </div>
+    </div>
+
+    <div class="card" style="margin-top:16px; padding:20px; text-align:center; border:2px dashed var(--flag-1);">
+        <div style="font-size:28px; margin-bottom:4px;"><i class="fas fa-sliders-h" style="color:var(--flag-1);"></i></div>
+        <h3 style="font-size:16px; margin:6px 0;">{{ _('Custom Duration') }}</h3>
+        <p style="color:#888; font-size:12px; margin-bottom:12px;">{{ _('Choose any number of months') }}</p>
+        <div style="display:flex; gap:10px; justify-content:center; align-items:center;">
+            <input type="number" id="customMonths" min="1" max="60" value="1" style="width:80px; padding:10px; border:2px solid #e0e0e0; border-radius:10px; font-size:18px; font-weight:700; text-align:center;">
+            <span style="font-weight:600; color:#555;">{{ _('months') }}</span>
+        </div>
+        <div style="margin-top:10px; font-size:13px; color:#555;">
+            {{ _('Estimated') }}: <strong id="customPrice" style="color:var(--flag-1); font-size:18px;">{{ prices.monthly|currency }}</strong>
+        </div>
+        <button type="button" class="btn btn-primary" style="margin-top:12px; padding:10px 24px;" onclick="goCustom()">{{ _('Subscribe') }}</button>
+    </div>
+
+    <div style="text-align:center; margin-top:18px; font-size:12px; color:#888;">
+        <i class="fas fa-check-circle" style="color:var(--flag-1);"></i> {{ _('No commission deduction during subscription period') }}<br>
+        <i class="fas fa-check-circle" style="color:var(--flag-1);"></i> {{ _('Cancel anytime — subscription runs until expiry') }}<br>
+        <i class="fas fa-check-circle" style="color:var(--flag-1);"></i> {{ _('Passengers pay the same price — commission is deducted from agency side') }}
+    </div>
+</div>
+
+<script>
+var MONTHLY_PRICE = {{ prices.monthly }};
+var CURRENCY = '{{ curr }}';
+document.getElementById('customMonths').addEventListener('input', function() {
+    var m = parseInt(this.value) || 1;
+    var total = MONTHLY_PRICE * m;
+    document.getElementById('customPrice').textContent = total.toLocaleString() + ' ' + CURRENCY;
+});
+function goCustom() {
+    var m = document.getElementById('customMonths').value;
+    if (!m || m < 1) { alert('Please enter number of months'); return; }
+    window.location.href = '{{ url_for("agency_subscribe_pay") }}?plan=custom&months=' + m;
+}
+</script>
+{% endblock %}

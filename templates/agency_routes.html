@@ -1,0 +1,16 @@
+{% extends "base.html" %}
+{% block title %}{{ _('My Routes') }} - {{ agency.name }}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="color:#1a1a2e;">{{ _('My Routes') }}</h2>
+    <a href="{{ url_for('agency_route_add') }}" class="btn btn-success">{{ _('+ Add Route') }}</a>
+</div>
+<div class="card">
+    {% if routes %}
+    <div class="table-wrap"><table><tr><th>{{ _('From') }}</th><th>{{ _('To') }}</th><th>{{ _('Duration') }}</th><th>{{ _('Price') }}</th></tr>
+    {% for r in routes %}
+    <tr><td><strong>{{ r.from }}</strong></td><td><strong>{{ r.to }}</strong></td><td>{{ r.duration }}</td><td><strong>{{ r.price|currency }}</strong></td></tr>
+    {% endfor %}</table>
+    {% else %}<p style="color:#888;">{{ _('No routes yet.') }} <a href="{{ url_for('agency_route_add') }}">{{ _('Add one') }}</a>.</p>{% endif %}
+</div>
+{% endblock %}

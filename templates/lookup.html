@@ -1,0 +1,19 @@
+{% extends "base.html" %}
+{% block title %}{{ _('My Ticket') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:420px; margin:70px auto;">
+    <div class="card text-center">
+        <div style="font-size:48px; margin-bottom:10px;"><i class="fas fa-ticket" style="color:var(--flag-1);"></i></div>
+        <h2 style="margin-bottom:6px;">{{ _('My Ticket') }}</h2>
+        <p style="color:#888; font-size:14px; margin-bottom:4px;">{{ _('Enter your booking reference to view your ticket') }}</p>
+        <p style="color:#aaa; font-size:12px; margin-bottom:20px;">{{ _('Find it on your booking confirmation or ticket page') }}</p>
+        <form method="POST">
+            <div class="form-group">
+                <input type="text" name="ref" class="form-control" placeholder="{{ _('e.g. CM-ABC-0001') }}" required
+                       style="text-align:center; font-size:18px; text-transform:uppercase; letter-spacing:2px;">
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">{{ _('View Ticket') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

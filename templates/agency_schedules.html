@@ -1,0 +1,33 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Schedules') }} - {{ agency.name }}{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:20px;">
+    <h2 style="color:#1a1a2e;">{{ _('Trip Schedules') }}</h2>
+    <a href="{{ url_for('agency_schedule_add') }}" class="btn btn-success">{{ _('+ Schedule') }}</a>
+</div>
+<div class="card">
+    {% if schedules %}
+    <div class="table-wrap"><table><tr><th>{{ _('Route') }}</th><th>{{ _('Date') }}</th><th>{{ _('Period') }}</th><th>{{ _('Time') }}</th><th>{{ _('Bus') }}</th><th>{{ _('Seats') }}</th><th>{{ _('Status') }}</th><th></th></tr>
+    {% for t in schedules %}
+    <tr>
+        <td><strong>{{ t.route.from }} → {{ t.route.to }}</strong></td>
+        <td>{{ t.date }}</td>
+        <td>
+            {% for p in periods %}{% if p.key == t.period %}<span class="badge badge-blue">{{ _(p.label) }}</span>{% endif %}{% endfor %}
+        </td>
+        <td>{{ t.time }}</td>
+        <td>{{ t.bus.plate if t.bus else '-' }}</td>
+        <td>{{ t.booked }}/{{ t.capacity }}</td>
+        <td>{% if t.status == 'active' %}<span class="badge badge-green">{{ _('Active') }}</span>{% else %}<span class="badge badge-red">{{ _('Cancelled') }}</span>{% endif %}</td>
+        <td style="display:flex; gap:4px; flex-wrap:wrap;">
+            <a href="{{ url_for('agency_manifest', sid=t.id) }}" class="btn btn-sm btn-primary"><i class="fas fa-list"></i></a>
+            <a href="{{ url_for('agency_schedule_edit', sid=t.id) }}" class="btn btn-sm btn-outline"><i class="fas fa-pen"></i></a>
+            {% if t.status == 'active' %}
+            <a href="{{ url_for('agency_schedule_cancel', sid=t.id) }}" class="btn btn-sm btn-danger" onclick="return confirm('{{ _('Cancel this trip?') }}')"><i class="fas fa-times"></i></a>
+            {% endif %}
+        </td>
+    </tr>
+    {% endfor %}</table></div>
+    {% else %}<p style="color:#888;">{{ _('No schedules yet.') }}</p>{% endif %}
+</div>
+{% endblock %}

@@ -1,0 +1,51 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Add Route') }} - {{ agency.name }}{% endblock %}
+{% block content %}
+<div style="max-width:500px; margin:0 auto;">
+    <div class="card">
+        <h2 class="card-title">{{ _('Add a Route') }}</h2>
+        <form method="POST">
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>{{ _('From') }}</label>
+                    <select name="from_city" class="form-control" required>
+                        <option value="">{{ _('Select...') }}</option>
+                        {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label>{{ _('To') }}</label>
+                    <select name="to_city" class="form-control" required>
+                        <option value="">{{ _('Select...') }}</option>
+                        {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                    </select>
+                </div>
+            </div>
+            <div class="grid-2">
+                <div class="form-group">
+                    <label>{{ _('Duration') }}</label>
+                    <input type="text" name="duration" class="form-control" required placeholder="{{ _('e.g. 4h30') }}">
+                </div>
+                <div class="form-group">
+                    <label>{{ _('Price') }} ({{ country.currency }})</label>
+                    <input type="number" name="price" class="form-control" required min="500" placeholder="{{ _('e.g. 5000') }}">
+                </div>
+            </div>
+            <div style="background:#f8f9fa; border-radius:10px; padding:14px; margin-bottom:16px;">
+                <label style="display:flex; align-items:center; gap:10px; cursor:pointer;">
+                    <input type="checkbox" name="luggage_enabled" id="luggageToggle" style="width:18px;height:18px;" onchange="document.getElementById('luggageFields').style.display=this.checked?'block':'none'">
+                    <span style="font-weight:600;">{{ _('This route supports luggage') }}</span>
+                </label>
+                <div id="luggageFields" style="display:none; margin-top:10px;">
+                    <div class="form-group" style="margin-bottom:0;">
+                        <label style="font-size:13px;">{{ _('Price per kg') }} ({{ country.currency }})</label>
+                        <input type="number" name="luggage_price_per_kg" class="form-control" min="0" placeholder="{{ _('e.g. 500') }}" style="max-width:200px;">
+                        <div style="font-size:11px; color:#888; margin-top:4px;">{{ _('e.g. 500') }} {{ country.currency }} {{ _('per kg — passenger with 10 kg pays 5,000') }} {{ country.currency }} {{ _('extra') }}</div>
+                    </div>
+                </div>
+            </div>
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">{{ _('Save Route') }}</button>
+        </form>
+    </div>
+</div>
+{% endblock %}

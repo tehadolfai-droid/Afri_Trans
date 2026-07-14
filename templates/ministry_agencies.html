@@ -1,0 +1,142 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Agency Registry') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:10px; margin-bottom:20px;">
+    <h2 style="color:#1a1a2e; font-size:22px;"><i class="fas fa-building"></i> {{ _('National Agency Registry') }}</h2>
+    <a href="{{ url_for('ministry_dashboard') }}" class="btn btn-outline btn-sm"><i class="fas fa-arrow-left"></i> {{ _('Dashboard') }}</a>
+</div>
+
+<div class="card">
+    {% if agencies %}
+    <div class="table-wrap">
+    <table>
+        <tr>
+            <th>{{ _('Name') }}</th>
+            <th>{{ _('Country') }}</th>
+            <th>{{ _('Locations') }}</th>
+            <th>{{ _('Status') }}</th>
+            <th>{{ _('Reason') }}</th>
+            <th>{{ _('Buses') }}</th>
+            <th>{{ _('Routes') }}</th>
+            <th>{{ _('Bookings') }}</th>
+            <th>{{ _('Registered') }}</th>
+            <th>{{ _('Action') }}</th>
+        </tr>
+        {% for item in agencies %}
+        {% set rejection_reason = item.agency.get('rejection_reason', '') %}
+        {% set approval_reason = item.agency.get('approval_reason', '') %}
+        <tr style="{% if rejection_reason %}background:#ffebee;{% elif not item.approved %}background:#fff8e1;{% endif %}">
+            <td><strong>{{ item.agency.name }}</strong></td>
+            <td>{{ _(item.country_name) }}</td>
+            <td style="font-size:12px; color:#888;">{{ item.agency.get('locations', [])|join(', ') }}</td>
+            <td>
+                {% if item.approved %}
+                <span class="badge badge-green">{{ _('Approved') }}</span>
+                {% elif rejection_reason %}
+                <span class="badge badge-red" style="font-weight:800;">{{ _('Rejected') }}</span>
+                {% else %}
+                <span class="badge badge-orange" style="font-weight:800;">{{ _('PENDING') }}</span>
+                {% endif %}
+            </td>
+            <td style="font-size:12px; max-width:180px; word-break:break-word;">
+                {% if approval_reason and item.approved %}
+                <span style="color:#2e7d32;">{{ approval_reason }}</span>
+                {% elif rejection_reason %}
+                <span style="color:#c62828;">{{ rejection_reason }}</span>
+                {% else %}
+                <span style="color:#888;">—</span>
+                {% endif %}
+            </td>
+            <td>{{ item.buses }}</td>
+            <td>{{ item.routes }}</td>
+            <td>{{ item.bookings }}</td>
+            <td style="font-size:12px;">{{ item.agency.get('created_at', '-') }}</td>
+            <td>
+                <div style="display:flex; gap:4px; flex-wrap:nowrap;">
+                    {% if not item.approved %}
+                    {% if not rejection_reason %}
+                    <button type="button" class="btn btn-success btn-sm" style="white-space:nowrap;" data-aid="{{ item.agency.id }}" data-name="{{ item.agency.name }}" onclick="openApproveModal(this)"><i class="fas fa-check"></i> {{ _('Approve') }}</button>
+                    {% endif %}
+                    <button type="button" class="btn btn-danger btn-sm" style="white-space:nowrap;" data-aid="{{ item.agency.id }}" data-name="{{ item.agency.name }}" onclick="openRejectModal(this)"><i class="fas fa-times"></i> {{ _('Reject') }}</button>
+                    {% else %}
+                    <button type="button" class="btn btn-danger btn-sm" data-aid="{{ item.agency.id }}" data-name="{{ item.agency.name }}" onclick="openRejectModal(this)"><i class="fas fa-times"></i> {{ _('Reject') }}</button>
+                    {% endif %}
+                </div>
+            </td>
+        </tr>
+        {% endfor %}
+    </table>
+    </div>
+    {% else %}
+    <p style="color:#888; text-align:center; padding:40px;">{{ _('No agencies registered yet.') }}</p>
+    {% endif %}
+</div>
+
+<!-- Approval Reason Modal -->
+<div id="approveModal" class="modal-overlay">
+    <div class="card" style="max-width:460px; width:90%; margin:auto; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:18px; color:#2e7d32;"><i class="fas fa-check-circle"></i> {{ _('Approve Agency') }}</h3>
+            <button type="button" onclick="closeApproveModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#888;">&times;</button>
+        </div>
+        <p style="font-size:14px; color:#555; margin-bottom:12px;">{{ _('Provide a reason for approving') }} <strong id="approveAgencyName"></strong>:</p>
+        <form id="approveForm" method="POST" action="">
+            <textarea name="reason" rows="3" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; resize:vertical; box-sizing:border-box;" placeholder="{{ _('Enter approval reason...') }}" required></textarea>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+                <button type="button" class="btn btn-outline" onclick="closeApproveModal()">{{ _('Cancel') }}</button>
+                <button type="submit" class="btn btn-success"><i class="fas fa-check"></i> {{ _('Confirm Approve') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<!-- Rejection Reason Modal -->
+<div id="rejectModal" class="modal-overlay">
+    <div class="card" style="max-width:460px; width:90%; margin:auto; padding:24px;">
+        <div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:16px;">
+            <h3 style="font-size:18px; color:#c62828;"><i class="fas fa-exclamation-triangle"></i> {{ _('Reject Agency') }}</h3>
+            <button type="button" onclick="closeRejectModal()" style="background:none; border:none; font-size:24px; cursor:pointer; color:#888;">&times;</button>
+        </div>
+        <p style="font-size:14px; color:#555; margin-bottom:12px;">{{ _('Provide a reason for rejecting') }} <strong id="rejectAgencyName"></strong>:</p>
+        <form id="rejectForm" method="POST" action="">
+            <textarea name="reason" rows="3" style="width:100%; padding:10px; border:2px solid #e0e0e0; border-radius:8px; font-size:14px; resize:vertical; box-sizing:border-box;" placeholder="{{ _('Enter rejection reason...') }}" required></textarea>
+            <div style="display:flex; gap:8px; justify-content:flex-end; margin-top:16px;">
+                <button type="button" class="btn btn-outline" onclick="closeRejectModal()">{{ _('Cancel') }}</button>
+                <button type="submit" class="btn btn-danger"><i class="fas fa-times"></i> {{ _('Confirm Reject') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
+
+<script>
+function openApproveModal(btn) {
+    var aid = btn.getAttribute('data-aid');
+    var name = btn.getAttribute('data-name');
+    document.getElementById('approveAgencyName').textContent = name;
+    document.getElementById('approveForm').action = "{{ url_for('ministry_approve_agency', aid=0) }}".replace('/0', '/' + aid);
+    document.getElementById('approveModal').style.display = 'flex';
+}
+function closeApproveModal() {
+    document.getElementById('approveModal').style.display = 'none';
+    document.getElementById('approveForm').reset();
+}
+function openRejectModal(btn) {
+    var aid = btn.getAttribute('data-aid');
+    var name = btn.getAttribute('data-name');
+    document.getElementById('rejectAgencyName').textContent = name;
+    document.getElementById('rejectForm').action = "{{ url_for('ministry_reject_agency', aid=0) }}".replace('/0', '/' + aid);
+    document.getElementById('rejectModal').style.display = 'flex';
+}
+function closeRejectModal() {
+    document.getElementById('rejectModal').style.display = 'none';
+    document.getElementById('rejectForm').reset();
+}
+// Close modals on overlay click
+document.getElementById('approveModal').addEventListener('click', function(e) {
+    if (e.target === this) closeApproveModal();
+});
+document.getElementById('rejectModal').addEventListener('click', function(e) {
+    if (e.target === this) closeRejectModal();
+});
+</script>
+{% endblock %}

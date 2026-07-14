@@ -1,0 +1,353 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Home') }} - AFRI Trans{% endblock %}
+{% block content %}
+
+<style>
+.accordion { max-width:420px; margin:0 auto 14px; }
+.accordion-item {
+    background:#fff; border-radius:10px; margin-bottom:6px;
+    box-shadow:0 1px 4px rgba(0,0,0,0.05); border:1px solid #e8e8e8;
+    overflow:hidden; transition:all 0.25s ease;
+}
+.accordion-item.active { border-color:var(--flag-1); box-shadow:0 1px 8px rgba(0,122,94,0.12); }
+.accordion-item.completed { border-color:#2e7d32; }
+.accordion-item.disabled {
+    background:#fafafa; border-color:#e0e0e0;
+    border-left:3px solid #e0e0e0; cursor:default;
+}
+.accordion-header {
+    display:flex; align-items:center; gap:8px; padding:8px 14px;
+    cursor:pointer; user-select:none; transition:background 0.15s;
+}
+.accordion-header:hover { background:rgba(0,0,0,0.02); }
+.accordion-item.disabled .accordion-header { cursor:default; }
+.accordion-item.disabled .accordion-header:hover { background:transparent; }
+.step-number {
+    width:24px; height:24px; border-radius:50%;
+    display:flex; align-items:center; justify-content:center;
+    font-weight:800; font-size:11px; flex-shrink:0;
+    background:#f5f5f5; color:#bdbdbd; transition:all 0.25s ease;
+}
+.accordion-item.active .step-number { background:var(--flag-1); color:#fff; }
+.accordion-item.completed .step-number { background:#2e7d32; color:#fff; }
+.step-title { font-weight:600; font-size:13px; color:#333; flex:1; }
+.accordion-item.disabled .step-title { color:#bbb; }
+.step-title small { font-weight:400; font-size:11px; color:#999; margin-left:4px; }
+.accordion-item.disabled .step-title small { color:#ccc; }
+.step-check { color:#2e7d32; font-size:13px; display:none; }
+.accordion-item.completed .step-check { display:block; }
+.step-chevron { color:#ccc; font-size:10px; transition:transform 0.25s ease; }
+.accordion-item.active .step-chevron { transform:rotate(180deg); }
+.accordion-body { padding:0 14px 10px; display:none; }
+.accordion-item.active .accordion-body { display:block; }
+.disabled-hint { color:#ccc; font-size:11px; margin-left:auto; display:flex; align-items:center; gap:3px; }
+.accordion-item:not(.disabled) .disabled-hint { display:none; }
+@keyframes stepPulse {
+    0% { box-shadow:0 0 0 0 rgba(0,122,94,0.25); }
+    70% { box-shadow:0 0 0 8px rgba(0,122,94,0); }
+    100% { box-shadow:0 0 0 0 rgba(0,122,94,0); }
+}
+.accordion-item.just-enabled { animation:stepPulse 0.6s ease-out; }
+.pay-option input:checked + div,
+.pay-option.selected div {
+    border-color: var(--flag-1) !important;
+    background: #f0fdf4;
+    box-shadow: 0 0 0 3px rgba(0,122,94,0.15);
+}
+</style>
+
+<div class="hero">
+    <div class="hero-flag"><img src="{{ url_for('static', filename='img/flags/' + country_code + '.png') }}" alt="{{ country.name }}" style="height:120px; width:auto; border-radius:4px;"></div>
+    <div class="hero-content">
+        <h1>
+            {% set fc = country.flag_colors %}
+            <span style="color:{{ fc[0] }};">{{ _('Book') }}</span>
+            <span style="color:{{ fc[1] if fc|length > 1 else fc[0] }};">{{ _('Your') }}</span>
+            <span style="color:{{ fc[2] if fc|length > 2 else fc[0] }};">{{ _('Journey') }}</span>
+            <span style="color:{{ fc[3] if fc|length > 3 else fc[1] if fc|length > 1 else fc[0] }};">{{ _('Across') }}</span>
+            <span style="color:{{ fc[4] if fc|length > 4 else fc[2] if fc|length > 2 else fc[0] }};">{{ country.name }}</span>
+        </h1>
+        <p>{{ _('Search, compare, and book bus tickets from trusted transport agencies across the country.') }}</p>
+    </div>
+</div>
+
+<div class="accordion" id="bookingAccordion">
+
+    <!-- Step 1: Search -->
+    <div class="accordion-item active" id="step1Item">
+        <div class="accordion-header" onclick="toggleStep(1)">
+            <span class="step-number">1</span>
+            <span class="step-title">{{ _('Search Trip') }}</span>
+            <span class="step-check"><i class="fas fa-check-circle"></i></span>
+            <span class="step-chevron"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-body" id="step1Body">
+            <form id="searchForm" onsubmit="return doSearch(event)">
+                <div style="display:flex; gap:6px; flex-wrap:wrap;">
+                    <select name="from" class="form-control" required style="flex:1; min-width:120px; font-size:12px; padding:6px 8px;">
+                        <option value="">{{ _('From') }}</option>
+                        {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                    </select>
+                    <select name="to" class="form-control" required style="flex:1; min-width:120px; font-size:12px; padding:6px 8px;">
+                        <option value="">{{ _('To') }}</option>
+                        {% for c in cities %}<option value="{{ c }}">{{ c }}</option>{% endfor %}
+                    </select>
+                    <input type="date" name="date" class="form-control" required min="{{ today }}" value="{{ today }}" style="flex:0 0 130px; font-size:12px; padding:6px 8px;">
+                    <button type="submit" class="btn btn-primary" style="font-size:12px; padding:6px 14px;" id="searchBtn"><i class="fas fa-search"></i></button>
+                </div>
+            </form>
+            <div id="searchResults"></div>
+        </div>
+    </div>
+
+    <!-- Step 2: Choose Seat -->
+    <div class="accordion-item disabled" id="step2Item">
+        <div class="accordion-header" onclick="toggleStep(2)">
+            <span class="step-number">2</span>
+            <span class="step-title">{{ _('Choose Seat') }} <small>{{ _('Pick your preferred seat') }}</small></span>
+            <span class="step-check"><i class="fas fa-check-circle"></i></span>
+            <span class="step-chevron"><i class="fas fa-chevron-down"></i></span>
+            <span class="disabled-hint"><i class="fas fa-lock"></i> <span>{{ _('Next') }}</span></span>
+        </div>
+        <div class="accordion-body" id="step2Body">
+            <div id="step2Content">
+                <div style="padding:20px 0; text-align:center;">
+                    <div style="background:#f5f5f5; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                        <i class="fas fa-couch" style="font-size:24px; color:#bbb;"></i>
+                    </div>
+                    <div style="color:#888; font-size:13px; font-weight:500;">{{ _('Search for a trip first') }}</div>
+                    <div style="color:#ccc; font-size:12px; margin-top:2px;">{{ _('Results will appear above') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 3: Your Details -->
+    <div class="accordion-item disabled" id="step3Item">
+        <div class="accordion-header" onclick="toggleStep(3)">
+            <span class="step-number">3</span>
+            <span class="step-title">{{ _('Passenger Details') }} <small>{{ _('Name, phone, ID') }}</small></span>
+            <span class="step-check"><i class="fas fa-check-circle"></i></span>
+            <span class="step-chevron"><i class="fas fa-chevron-down"></i></span>
+            <span class="disabled-hint"><i class="fas fa-lock"></i> <span>{{ _('Next') }}</span></span>
+        </div>
+        <div class="accordion-body" id="step3Body">
+            <div id="step3Content">
+                <div style="padding:20px 0; text-align:center;">
+                    <div style="background:#f5f5f5; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                        <i class="fas fa-pen" style="font-size:24px; color:#bbb;"></i>
+                    </div>
+                    <div style="color:#888; font-size:13px; font-weight:500;">{{ _('Select a seat first') }}</div>
+                    <div style="color:#ccc; font-size:12px; margin-top:2px;">{{ _('Choose from the seat map above') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 4: Payment -->
+    <div class="accordion-item disabled" id="step4Item">
+        <div class="accordion-header" onclick="toggleStep(4)">
+            <span class="step-number">4</span>
+            <span class="step-title">{{ _('Payment') }} <small>{{ _('Confirm and pay') }}</small></span>
+            <span class="step-check"><i class="fas fa-check-circle"></i></span>
+            <span class="step-chevron"><i class="fas fa-chevron-down"></i></span>
+            <span class="disabled-hint"><i class="fas fa-lock"></i> <span>{{ _('Next') }}</span></span>
+        </div>
+        <div class="accordion-body" id="step4Body">
+            <div id="step4Content">
+                <div style="padding:20px 0; text-align:center;">
+                    <div style="background:#f5f5f5; width:60px; height:60px; border-radius:50%; display:flex; align-items:center; justify-content:center; margin:0 auto 10px;">
+                        <i class="fas fa-credit-card" style="font-size:24px; color:#bbb;"></i>
+                    </div>
+                    <div style="color:#888; font-size:13px; font-weight:500;">{{ _('Confirm your details first') }}</div>
+                    <div style="color:#ccc; font-size:12px; margin-top:2px;">{{ _('Fill in passenger details above') }}</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Step 5: Done -->
+    <div class="accordion-item disabled" id="step5Item">
+        <div class="accordion-header" onclick="toggleStep(5)">
+            <span class="step-number">5</span>
+            <span class="step-title">{{ _('Done') }} <small>{{ _('Booking confirmed') }}</small></span>
+            <span class="step-check"><i class="fas fa-check-circle"></i></span>
+            <span class="step-chevron"><i class="fas fa-chevron-down"></i></span>
+        </div>
+        <div class="accordion-body" id="step5Body">
+            <div id="step5Content">
+                <div style="padding:30px 0; text-align:center;">
+                    <div style="width:80px; height:80px; border-radius:50%; background:#e8f5e9; display:flex; align-items:center; justify-content:center; margin:0 auto 14px;">
+                        <i class="fas fa-check-circle" style="font-size:40px; color:#2e7d32;"></i>
+                    </div>
+                    <div style="color:#2e7d32; font-size:20px; font-weight:800;">{{ _('Booking Complete!') }}</div>
+                    <div style="color:#888; font-size:13px; margin-top:6px;">{{ _('Your ticket has been issued.') }}</div>
+                    <div style="margin-top:16px;">
+                        <a href="#" id="doneTicketLink" class="btn btn-success" style="font-size:14px; padding:10px 28px;">
+                            <i class="fas fa-ticket-alt"></i> {{ _('View Ticket') }}
+                        </a>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+</div>
+
+{% if agencies %}
+<div style="margin-bottom:20px;">
+    <h3 style="font-size:14px; color:#1a1a2e; margin-bottom:10px; text-align:center;"><i class="fas fa-bus" style="color:var(--flag-1);"></i> {{ _('Our Transport Agencies') }}</h3>
+    <div class="flag-divider" style="max-width:120px; margin:0 auto 12px;"></div>
+    <div style="display:grid; grid-template-columns: repeat(auto-fill, minmax(140px, 1fr)); gap:8px;">
+        {% for a in agencies %}
+        <div class="agency-card" style="position:relative;">
+            <a href="{{ url_for('browse_agency', aid=a.id) }}" style="text-decoration:none; color:inherit; display:block; padding:10px;">
+                <div style="font-size:28px; margin-bottom:2px;"><i class="fas fa-bus" style="color:var(--flag-1);"></i></div>
+                <div style="font-weight:700; font-size:12px; color:#1a1a2e;">{{ a.name }}</div>
+                <div style="font-size:10px; color:var(--flag-1); font-weight:600; margin-top:4px;">{{ _('View Schedules →') }}</div>
+            </a>
+        </div>
+        {% endfor %}
+    </div>
+</div>
+{% endif %}
+
+<script>
+var accordionCtx = {seat: null, form: null};
+
+function toggleStep(n) {
+    var item = document.getElementById('step' + n + 'Item');
+    if (item.classList.contains('disabled')) return;
+    var wasActive = item.classList.contains('active');
+    document.querySelectorAll('.accordion-item.active').forEach(function(el) { el.classList.remove('active'); });
+    if (!wasActive) item.classList.add('active');
+}
+
+function openStep(n) {
+    document.querySelectorAll('.accordion-item.active').forEach(function(el) { el.classList.remove('active'); });
+    document.getElementById('step' + n + 'Item').classList.add('active');
+}
+
+function enableStep(n) {
+    var el = document.getElementById('step' + n + 'Item');
+    el.classList.add('completed');
+    el.classList.remove('disabled');
+    el.classList.remove('just-enabled');
+    void el.offsetWidth;
+    el.classList.add('just-enabled');
+    setTimeout(function() { el.classList.remove('just-enabled'); }, 700);
+}
+
+// ── Step 1: Search ──
+function doSearch(e) {
+    e.preventDefault();
+    var btn = document.getElementById('searchBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>';
+    document.getElementById('searchResults').innerHTML = '';
+    fetch('/api/booking/search', { method: 'POST', body: new FormData(document.getElementById('searchForm')) })
+        .then(function(r) { return r.json(); })
+        .then(function(d) { document.getElementById('searchResults').innerHTML = d.html; btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i>'; })
+        .catch(function() { btn.disabled = false; btn.innerHTML = '<i class="fas fa-search"></i>'; });
+    return false;
+}
+function selectTrip(sid) {
+    document.getElementById('step2Content').innerHTML = '<div class="text-center" style="padding:20px; color:#999; font-size:12px;"><i class="fas fa-spinner fa-spin" style="font-size:22px; display:block; margin-bottom:4px;"></i>{{ _("Loading...") }}</div>';
+    enableStep(1); openStep(2);
+    fetch('/api/booking/seats/' + sid).then(function(r){return r.json()}).then(function(d) {
+        accordionCtx.seat = d.ctx;
+        document.getElementById('step2Content').innerHTML = d.html;
+    });
+}
+
+// ── Step 2: Seat ──
+function selectSeat(el, num) {
+    var ctx = accordionCtx.seat || {};
+    document.querySelectorAll('.seat-std:not(.taken), .seat-vip:not(.taken)').forEach(function(x) { x.className = x.className.replace(/ selected/g, ''); });
+    el.classList.add('selected');
+    var isVipSeat = el.dataset.class === 'vip';
+    var total = isVipSeat ? (ctx.basePrice||0) + (ctx.vipSurcharge||0) : (ctx.basePrice||0);
+    document.getElementById('seatDisplay').textContent = num;
+    document.getElementById('classDisplay').textContent = isVipSeat ? '(VIP)' : '';
+    document.getElementById('classDisplay').style.color = isVipSeat ? '#e65100' : '#888';
+    document.getElementById('totalDisplay').textContent = total.toLocaleString() + ' ' + (CURRENCY_SYM || 'XAF');
+    document.getElementById('seatInfo').style.display = 'block';
+    document.getElementById('seatInfo').scrollIntoView({ behavior: 'smooth', block: 'center' });
+}
+function proceedWithSeat() {
+    var num = document.querySelector('.seat-std.selected, .seat-vip.selected');
+    if (num) window.loadPassengerForm(accordionCtx.seat.sid, parseInt(num.dataset.num));
+}
+
+// ── Step 3: Passenger form ──
+window.loadPassengerForm = function(sid, seatNum) {
+    document.getElementById('step3Content').innerHTML = '<div class="text-center" style="padding:20px; color:#999; font-size:12px;"><i class="fas fa-spinner fa-spin" style="font-size:22px; display:block; margin-bottom:4px;"></i>{{ _("Loading...") }}</div>';
+    enableStep(2); openStep(3);
+    fetch('/api/booking/form/' + sid + '?seat=' + seatNum).then(function(r){return r.json()}).then(function(d) {
+        accordionCtx.form = d.ctx;
+        document.getElementById('step3Content').innerHTML = d.html;
+    });
+};
+function toggleLuggage() {
+    var ctx = accordionCtx.form || {};
+    var checked = document.getElementById('luggageCheck').checked;
+    document.getElementById('luggageWeightField').style.display = checked ? 'block' : 'none';
+    if (!checked) {
+        document.getElementById('luggageWeight').value = '';
+        document.getElementById('luggageBreakdown').style.display = 'none';
+        document.getElementById('totalDisplay').textContent = (ctx.basePrice||0).toLocaleString() + ' ' + (CURRENCY_SYM || 'XAF');
+    }
+}
+function updateTotal() {
+    var ctx = accordionCtx.form || {};
+    var w = parseFloat(document.getElementById('luggageWeight').value) || 0;
+    var fee = w * (ctx.ppkg||0);
+    var total = (ctx.basePrice||0) + fee;
+    document.getElementById('luggageBreakdown').style.display = fee > 0 ? 'flex' : 'none';
+    document.getElementById('luggageWeightDisplay').textContent = '(' + w + ' kg × ' + (ctx.ppkg||0).toLocaleString() + ' ' + (CURRENCY_SYM || 'XAF') + ')';
+    document.getElementById('luggageFeeDisplay').textContent = '+' + fee.toLocaleString() + ' ' + (CURRENCY_SYM || 'XAF');
+    document.getElementById('totalDisplay').textContent = total.toLocaleString() + ' ' + (CURRENCY_SYM || 'XAF');
+}
+function submitBooking(e) {
+    e.preventDefault();
+    var btn = document.getElementById('submitBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Processing...") }}';
+    fetch('/api/booking/confirm', { method: 'POST', body: new FormData(document.getElementById('passengerForm')) })
+        .then(function(r){return r.json()}).then(function(d) {
+            if (d.ok && d.bid) {
+                accordionCtx.bid = d.bid;
+                enableStep(3);
+                document.getElementById('step4Content').innerHTML = '<div class="text-center" style="padding:20px; color:#999; font-size:12px;"><i class="fas fa-spinner fa-spin" style="font-size:22px; display:block; margin-bottom:4px;"></i>{{ _("Loading...") }}</div>';
+                openStep(4);
+                fetch('/api/booking/payment-form/' + d.bid).then(function(r){return r.json()}).then(function(d2) {
+                    if (d2.ok) { enableStep(4); document.getElementById('step4Content').innerHTML = d2.html; }
+                    else if (d2.redirect) { window.location.href = d2.redirect; }
+                    else { document.getElementById('step4Content').innerHTML = '<div style="color:red;padding:20px;">' + (d2.error||'{{ _("Error") }}') + '</div>'; }
+                }).catch(function() { document.getElementById('step4Content').innerHTML = '<div style="color:red;padding:20px;">{{ _("Could not load payment form. Please try again.") }}</div>'; });
+            }
+            else { alert(d.error || '{{ _("An error occurred") }}'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-credit-card"></i> {{ _("Continue to Payment") }}'; }
+        })
+        .catch(function() { alert('{{ _("Network error. Please try again.") }}'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-credit-card"></i> {{ _("Continue to Payment") }}'; });
+    return false;
+}
+function doPayment(e, bid) {
+    e.preventDefault();
+    var btn = document.getElementById('payBtn');
+    btn.disabled = true; btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> {{ _("Processing...") }}';
+    var fd = new FormData(document.getElementById('paymentForm'));
+    fd.append('bid', bid);
+    fetch('/api/booking/pay', { method: 'POST', body: fd })
+        .then(function(r){return r.json()}).then(function(d) {
+            if (d.ok && d.redirect) {
+                enableStep(4);
+                enableStep(5);
+                document.getElementById('step5Content').querySelector('a').href = d.redirect;
+                openStep(5);
+            }
+            else { alert(d.error || '{{ _("Payment failed") }}'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i> {{ _("Confirm and Pay") }}'; }
+        })
+        .catch(function() { alert('{{ _("Network error. Please try again.") }}'); btn.disabled = false; btn.innerHTML = '<i class="fas fa-check-circle"></i> {{ _("Confirm and Pay") }}'; });
+    return false;
+}
+</script>
+
+{% endblock %}

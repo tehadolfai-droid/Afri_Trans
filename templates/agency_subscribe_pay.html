@@ -1,0 +1,68 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Confirm Subscription') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:480px; margin:30px auto;">
+    <div class="card" style="padding:24px;">
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:36px;"><i class="fas fa-shield-alt" style="color:var(--flag-1);"></i></div>
+            <h2 class="card-title" style="margin-bottom:4px;">
+                {% if plan == 'monthly' %}{{ _('Monthly Subscription') }}
+                {% elif plan == 'semiannual' %}{{ _('6 Months Subscription') }}
+                {% elif plan == 'annual' %}{{ _('Annual Subscription') }}
+                {% else %}{{ _('Custom Subscription') }} ({{ months }} {{ _('months') }}){% endif %}
+            </h2>
+        </div>
+
+        <div style="background:#e8f5e9; border-radius:12px; padding:16px; margin-bottom:16px; text-align:center;">
+            <div style="font-size:12px; color:#555;">{{ _('Amount to pay') }}</div>
+            <div style="font-size:32px; font-weight:900; color:var(--flag-1);">{{ amount|currency }}</div>
+            <div style="font-size:11px; color:#555; margin-top:4px;">
+                {% if plan == 'monthly' %}{{ _('Valid for 30 days') }}
+                {% elif plan == 'semiannual' %}{{ _('Valid for 6 months') }}
+                {% elif plan == 'annual' %}{{ _('Valid for 1 year') }}
+                {% else %}{{ _('Valid for') }} {{ months }} {{ _('months') }}{% endif %}
+            </div>
+        </div>
+
+        <form method="POST" action="{{ url_for('agency_subscribe_confirm') }}">
+            <input type="hidden" name="plan" value="{{ plan }}">
+            {% if plan == 'custom' %}
+            <input type="hidden" name="custom_months" value="{{ months }}">
+            {% endif %}
+            <div style="margin-bottom:16px;">
+                <label style="font-weight:600; font-size:14px; display:block; margin-bottom:8px;">{{ _('Select payment method') }}</label>
+                <div style="display:flex; gap:10px; flex-wrap:wrap;">
+                    {% for p in providers %}
+                    <label class="pay-option" style="flex:1; min-width:110px; cursor:pointer;">
+                        <input type="radio" name="provider" value="{{ p.code }}" required style="display:none;" onchange="document.querySelectorAll('.pay-option').forEach(function(e){e.classList.remove('selected')}); this.parentElement.classList.add('selected');">
+                        <div style="border:2px solid #e0e0e0; border-radius:12px; padding:14px; text-align:center; transition:all 0.2s;">
+                            <div style="font-size:24px; margin-bottom:2px;"><i class="fas {{ p.icon }}" style="color:{{ p.color }};"></i></div>
+                            <div style="font-size:11px; font-weight:600;">{{ p.name }}</div>
+                        </div>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('Phone Number') }}</label>
+                <div style="display:flex; gap:4px; align-items:stretch;">
+                    <span style="background:#e0e0e0; padding:10px 12px; border-radius:10px 0 0 10px; font-weight:700; font-size:15px; display:flex; align-items:center; color:#555;">+{{ country.phone_code }}</span>
+                    <input type="text" name="phone" class="form-control" style="border-radius:0 10px 10px 0;" required placeholder="{{ _('e.g. 671234567') }}">
+                </div>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%; margin-top:8px;">{{ _('Pay') }} {{ amount|currency }}</button>
+        </form>
+
+        <div style="text-align:center; margin-top:12px;">
+            <a href="{{ url_for('agency_subscribe') }}" style="color:#888; font-size:13px;">&larr; {{ _('Choose a different plan') }}</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.pay-option.selected > div { border-color: var(--flag-1) !important; background: #e8f5e9; }
+.pay-option.selected input { display: none; }
+</style>
+{% endblock %}

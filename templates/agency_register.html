@@ -1,0 +1,177 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Register Agency') }} - AFRI Trans{% endblock %}
+{% block content %}
+<div style="max-width:620px; margin:40px auto;">
+    <div class="card">
+        <div style="text-align:center; margin-bottom:16px;">
+            <div style="font-size:36px;"><i class="fas fa-building" style="color:var(--flag-1);"></i></div>
+            <h2 class="card-title" style="margin-bottom:0;">{{ _('Create Your Agency') }}</h2>
+            <p style="color:#888; font-size:13px;">{{ _('Set up your transport agency in') }} {{ _(country.name) }}</p>
+            <p style="color:#e65100; font-size:12px; margin-top:6px;"><i class="fas fa-clock"></i> {{ _('Registration requires Ministry of Transport approval before going public.') }}</p>
+        </div>
+
+        <form method="POST">
+            <div class="form-group">
+                <label>{{ _('Agency Name') }}</label>
+                <input type="text" name="name" class="form-control" required placeholder="{{ _('e.g. Buca Travel') }}">
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('Admin Email (for password reset)') }}</label>
+                <input type="email" name="email" class="form-control" placeholder="{{ _('e.g. agency@example.com') }}">
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('WhatsApp Number (for passenger contact)') }}</label>
+                <div style="display:flex; gap:4px; align-items:stretch;">
+                    <span id="waCode" style="background:#e0e0e0; padding:10px 12px; border-radius:10px 0 0 10px; font-weight:700; font-size:15px; display:flex; align-items:center; color:#555;">+{{ country.phone_code }}</span>
+                    <input type="text" name="whatsapp" id="whatsappInput" class="form-control" style="border-radius:0 10px 10px 0;" placeholder="{{ _('e.g. 671234567') }}" oninput="validateWhatsApp(this)">
+                </div>
+                <small id="waHelp" style="color:#888;">{{ _('Enter your number without the country code.') }} {{ _('Country code') }} +{{ country.phone_code }} {{ _('is added automatically.') }}</small>
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('Set Password (keeps your agency secure)') }}</label>
+                <input type="password" name="password" class="form-control pw-field" required>
+            </div>
+
+            <div class="form-group">
+                <div style="display:flex; align-items:center; justify-content:space-between; margin-bottom:8px;">
+                    <label style="margin:0; font-size:13px; font-weight:600; color:#444;">{{ _('Operating Towns / Cities') }}</label>
+                    <button type="button" class="btn btn-sm btn-outline" onclick="toggleAllCities()" id="selectAllBtn" style="font-size:11px; padding:4px 10px;">{{ _('Select All') }}</button>
+                </div>
+                <div class="cities-grid">
+                    {% for city in cities %}
+                    <label class="city-check">
+                        <input type="checkbox" name="locations" value="{{ city }}" class="city-cb">
+                        <span>{{ city }}</span>
+                    </label>
+                    {% endfor %}
+                </div>
+            </div>
+
+            <div class="form-group">
+                <label>{{ _('Your Buses') }}</label>
+                <div id="busRows">
+                    <div class="bus-row" data-idx="0" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+                        <select name="bus_type_0" class="form-control" style="flex:1;">
+                            <option value="standard">{{ _('Standard') }}</option>
+                            <option value="vip">{{ _('VIP') }} (+{{ vip_surcharge }} {{ country.currency }})</option>
+                        </select>
+                        <input type="number" name="bus_count_0" class="form-control" style="flex:0 0 60px;" min="0" max="50" value="1" placeholder="{{ _('Qty') }}">
+                        <input type="number" name="bus_cap_0" class="form-control" style="flex:0 0 70px;" min="14" max="80" value="70" placeholder="{{ _('Seats') }}">
+                        <span style="font-size:11px; color:#888;">{{ _('seats each') }}</span>
+                    </div>
+                </div>
+                <button type="button" class="btn btn-sm btn-outline" onclick="addBusRow()" style="margin-top:4px;"><i class="fas fa-plus"></i> {{ _('Add another bus type') }}</button>
+            </div>
+
+            <div style="text-align:right; margin-bottom:10px;">
+                <label class="pw-toggle"><input type="checkbox" onchange="toggleAllPasswords(this)"> {{ _('Show password') }}</label>
+            </div>
+
+            <button type="submit" class="btn btn-primary btn-lg" style="width:100%;">{{ _('Create My Agency') }}</button>
+        </form>
+
+        <div style="margin-top:14px; text-align:center; font-size:13px;">
+            {{ _('Already have an agency?') }} <a href="{{ url_for('agency_login') }}" style="color:var(--flag-1); font-weight:600;">{{ _('Sign in') }}</a>
+        </div>
+    </div>
+</div>
+
+<style>
+.cities-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
+    gap: 4px;
+    padding: 8px;
+    border: 2px solid #e0e0e0;
+    border-radius: 10px;
+    background: #fafafa;
+    max-height: 200px;
+    overflow-y: auto;
+}
+.city-check {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 6px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background 0.15s;
+}
+.city-check:hover { background: #e8f5e9; }
+.city-check input:checked + span { font-weight: 600; color: var(--flag-1); }
+.city-check input { accent-color: var(--flag-1); }
+.bus-row input[type="number"] { text-align: center; }
+@media (max-width: 480px) {
+    .bus-row { flex-wrap: wrap; }
+    .bus-row select { min-width: 100%; }
+}
+</style>
+
+<div id="busRowTemplate" style="display:none;">
+    <div class="bus-row" style="display:flex; gap:8px; margin-bottom:8px; align-items:center;">
+        <select name="bus_type_0" class="form-control" style="flex:1;">
+            <option value="standard">{{ _('Standard') }}</option>
+            <option value="vip">{{ _('VIP') }} (+{{ vip_surcharge }} {{ country.currency }})</option>
+        </select>
+        <input type="number" name="bus_count_0" class="form-control" style="flex:0 0 60px;" min="0" max="50" value="1" placeholder="{{ _('Qty') }}">
+        <input type="number" name="bus_cap_0" class="form-control" style="flex:0 0 70px;" min="14" max="80" value="70" placeholder="{{ _('Seats') }}">
+        <span style="font-size:11px; color:#888;">{{ _('seats each') }}</span>
+        <button type="button" class="btn btn-sm btn-danger" onclick="removeBusRow(this)" style="padding:4px 8px;"><i class="fas fa-times"></i></button>
+    </div>
+</div>
+
+<script>
+function addBusRow() {
+    const template = document.getElementById('busRowTemplate').querySelector('.bus-row');
+    const clone = template.cloneNode(true);
+    const idx = document.querySelectorAll('#busRows .bus-row').length;
+    clone.setAttribute('data-idx', idx);
+    clone.querySelectorAll('[name]').forEach(el => {
+        el.name = el.name.replace('_0', '_' + idx);
+    });
+    clone.querySelector('.btn-danger').onclick = function() { removeBusRow(this); };
+    document.getElementById('busRows').appendChild(clone);
+}
+
+function removeBusRow(btn) {
+    btn.closest('.bus-row').remove();
+    reindexBusRows();
+}
+
+function reindexBusRows() {
+    const rows = document.querySelectorAll('#busRows .bus-row');
+    rows.forEach((row, idx) => {
+        row.setAttribute('data-idx', idx);
+        row.querySelectorAll('[name]').forEach(el => {
+            el.name = el.name.replace(/_\d+$/, '_' + idx);
+        });
+    });
+}
+
+function toggleAllCities() {
+    const cbs = document.querySelectorAll('.city-cb');
+    const allChecked = Array.from(cbs).every(cb => cb.checked);
+    cbs.forEach(cb => cb.checked = !allChecked);
+    document.getElementById('selectAllBtn').textContent = allChecked ? '{{ _("Select All") }}' : '{{ _("Deselect All") }}';
+}
+
+function validateWhatsApp(input) {
+    var val = input.value.trim();
+    var code = '{{ country.phone_code }}';
+    var help = document.getElementById('waHelp');
+    if (val.startsWith(code)) {
+        help.innerHTML = '{{ _("Please enter only your number without the country code") }} +' + code;
+        help.style.color = '#c62828';
+        input.setCustomValidity('{{ _("Remove the country code") }}');
+    } else {
+        help.innerHTML = '{{ _("Enter your number without the country code.") }} {{ _("Country code") }} +' + code + ' {{ _("is added automatically.") }}';
+        help.style.color = '#888';
+        input.setCustomValidity('');
+    }
+}
+</script>
+{% endblock %}

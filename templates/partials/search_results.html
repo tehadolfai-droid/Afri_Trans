@@ -1,0 +1,64 @@
+{% if grouped %}
+<div style="margin-top:8px;">
+    <div style="display:flex; align-items:center; gap:6px; margin-bottom:8px;">
+        <div style="font-size:11px; color:#888;">
+            <i class="fas fa-check-circle" style="color:#2e7d32;"></i>
+            {{ _('Found') }} <strong>{{ results|length }}</strong> {{ _('trip(s)') }}
+        </div>
+    </div>
+    {% for period in periods %}
+        {% if period.key in grouped %}
+        <div class="card" style="margin-bottom:6px; border-left:3px solid
+            {% if period.key == 'morning' %}#f9a825{% elif period.key == 'afternoon' %}#ef6c00{% else %}#5c6bc0{% endif %};
+            overflow:hidden;">
+            <div style="display:flex; align-items:center; gap:8px; margin-bottom:6px; padding-bottom:4px; border-bottom:1px solid #f0f0f0;">
+                <span style="font-size:16px;"><i class="fas {{ period.icon }}"></i></span>
+                <div>
+                    <span style="font-weight:700; font-size:12px;">{{ _(period.label) }}</span>
+                    <span style="color:#999; font-size:10px; margin-left:4px;">{{ period.range }}</span>
+                </div>
+                <span class="badge badge-blue" style="margin-left:auto; font-size:10px;">{{ grouped[period.key]|length }} {{ _('trip(s)') }}</span>
+            </div>
+            {% for t in grouped[period.key] %}
+            <div class="trip-row" style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:4px; padding:6px 0; {% if not loop.last %}border-bottom:1px solid #f5f5f5;{% endif %}">
+                <div style="display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <div style="background:linear-gradient(135deg,var(--flag-1),#00604a); color:#fff; width:24px; height:24px; border-radius:6px; display:flex; align-items:center; justify-content:center; font-size:11px;"><i class="fas fa-bus"></i></div>
+                    <div>
+                        <div style="display:flex; align-items:center; gap:4px;">
+                            <span style="font-weight:600; font-size:12px;">{{ t.agency.name }}</span>
+                        </div>
+                        <div style="color:#888; font-size:10px; margin-top:0px;">
+                            <i class="far fa-clock"></i> {{ t.schedule.time }} &bull; <i class="fas fa-bus"></i> {{ t.bus.plate }} <span class="badge {% if t.bus.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}" style="font-size:9px;">{{ t.bus.bus_type|upper }}</span> &bull; <i class="fas fa-stopwatch"></i> {{ t.route.duration }}
+                        </div>
+                    </div>
+                </div>
+                <div style="text-align:right; display:flex; align-items:center; gap:6px; flex-wrap:wrap;">
+                    <div>
+                        <div style="font-size:14px; font-weight:800; color:var(--flag-1);">{{ ((t.route.price + vip_surcharge) if t.bus.bus_type == 'vip' else t.route.price)|currency }}</div>
+                        <div style="font-size:10px; color:#888;">
+                            {% if t.available > 0 %}
+                            <span style="color:#2e7d32;"><i class="fas fa-check-circle"></i> {{ t.available }} {{ _('seat') }}{% if t.available > 1 %}s{% endif %}</span>
+                            {% else %}<span style="color:#c62828;"><i class="fas fa-times-circle"></i> {{ _('Full') }}</span>{% endif %}
+                        </div>
+                    </div>
+                    {% if t.available > 0 %}
+                    <button class="btn btn-success btn-sm" onclick="selectTrip({{ t.schedule.id }})" style="white-space:nowrap; font-size:11px; padding:4px 10px;">
+                        <i class="fas fa-arrow-right"></i> {{ _('Select') }}
+                    </button>
+                    {% else %}
+                    <button class="btn btn-sm" disabled style="background:#e0e0e0;color:#999; font-size:11px; padding:4px 10px;">{{ _('Full') }}</button>
+                    {% endif %}
+                </div>
+            </div>
+            {% endfor %}
+        </div>
+        {% endif %}
+    {% endfor %}
+</div>
+{% else %}
+<div class="card text-center" style="padding:16px 12px; margin-top:8px;">
+    <div style="font-size:28px; margin-bottom:6px;"><i class="fas fa-bus" style="color:var(--flag-1);"></i></div>
+    <h4 style="font-size:13px; margin:0;">{{ _('No trips found') }}</h4>
+    <p style="color:#888; margin-top:2px; font-size:11px;">{{ _('Try a different date, cities, or agency.') }}</p>
+</div>
+{% endif %}

@@ -1,0 +1,193 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<style>
+@page { margin: 0; size: A4 portrait; }
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body { font-family: 'Helvetica', 'Arial', sans-serif; background: #fff; color: #1a1a2e; }
+.ticket-wrap { width: 520px; margin: 20px auto; }
+{% set c1 = country.flag_colors[0] if country else '#007a5e' %}
+{% set c2 = country.flag_colors[1] if country else '#ce1126' %}
+{% set c3 = country.flag_colors[2] if country else '#fcd116' %}
+{% set curr = country.currency if country else 'FCFA' %}
+{% set cname = country.name if country else 'Cameroon' %}
+.ticket-border { border: 2px solid {{ c1 }}; border-radius: 18px; overflow: hidden; }
+.header-bg { background-color: #001a0e; padding: 28px 24px 18px; text-align: center; }
+.flag-swatch { text-align: center; margin-bottom: 2px; }
+.flag-swatch table { margin: 0 auto; border-collapse: collapse; }
+.flag-swatch td { width: 10px; height: 22px; }
+.swatch-1 { background-color: {{ c1 }}; }
+.swatch-2 { background-color: {{ c2 }}; }
+.swatch-3 { background-color: {{ c3 }}; }
+.afritrans-title { color: #fff; font-size: 26px; font-weight: 900; }
+.afritrans-sub { color: #fff; font-size: 12px; opacity: 0.7; letter-spacing: 2px; margin-top: 2px; }
+.ref-box { margin-top: 14px; background-color: rgba(255,255,255,0.1); display: inline-block; padding: 8px 30px; border-radius: 10px; border: 1px solid rgba(255,255,255,0.15); }
+.ref-label { font-size: 10px; letter-spacing: 2px; opacity: 0.6; color: #fff; }
+.ref-value { font-size: 26px; font-weight: 900; letter-spacing: 3px; color: #fff; }
+.flag-stripe { height: 5px; }
+.flag-stripe table { width: 100%; border-collapse: collapse; height: 5px; }
+.flag-stripe td { width: 33.33%; }
+.body-pad { padding: 0 24px; }
+.route-table { width: 100%; margin: 20px 0 16px; }
+.route-table td { width: 50%; vertical-align: top; }
+.route-table .right { text-align: right; }
+.label-sm { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+.city-name { font-size: 18px; font-weight: 700; margin-top: 2px; }
+.info-bar { background-color: #f8f9fa; border-radius: 12px; padding: 14px; text-align: center; margin-bottom: 16px; font-size: 14px; }
+.info-bar strong { font-weight: 700; }
+.dashed-top { border-top: 2px dashed #e0e0e0; padding-top: 16px; }
+.detail-table { width: 100%; }
+.detail-table td { width: 50%; vertical-align: top; padding-bottom: 6px; }
+.detail-table .right { text-align: right; }
+.detail-label { font-size: 10px; color: #999; text-transform: uppercase; letter-spacing: 1px; }
+.detail-value { font-weight: 600; font-size: 14px; margin-top: 2px; }
+.seat-number { font-size: 32px; font-weight: 900; color: {{ c1 }}; }
+.price-number { font-size: 20px; font-weight: 800; }
+.vip-badge { color: #e65100; font-weight: 600; font-size: 14px; }
+.vip-badge-bg { background-color: #fff8e1; color: #e65100; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+.standard-badge-bg { background-color: #e8f5e9; color: #2e7d32; padding: 2px 8px; border-radius: 8px; font-size: 10px; font-weight: 700; }
+.vip-surcharge { font-size: 10px; color: #e65100; font-weight: 500; }
+.divider-light { border-top: 1px solid #f0f0f0; margin: 10px 0; }
+.footer-bg { background-color: #f8fbfa; border-top: 2px dashed #e0e0e0; padding: 14px 24px; text-align: center; margin-top: 16px; }
+.footer-meta { font-size: 11px; color: #888; }
+.footer-meta span { padding: 0 8px; }
+.footer-msg { font-size: 12px; color: #555; margin-top: 8px; font-weight: 500; }
+.footer-time { font-size: 10px; color: #aaa; margin-top: 4px; }
+</style>
+</head>
+<body>
+<div class="ticket-wrap">
+  <div class="ticket-border">
+    <div class="header-bg">
+      <div class="flag-swatch">
+        <table>
+          <tr>
+            <td class="swatch-1"></td>
+            <td class="swatch-2"></td>
+            <td class="swatch-3"></td>
+          </tr>
+        </table>
+      </div>
+      <div class="afritrans-title">{{ _('AFRI Trans') }}</div>
+      <div class="afritrans-sub">{{ _('E-TICKET • OFFICIAL') }}</div>
+      <div class="ref-box">
+        <div class="ref-label">{{ _('REFERENCE') }}</div>
+        <div class="ref-value">{{ bk.booking_ref }}</div>
+      </div>
+    </div>
+
+    <table class="flag-stripe">
+      <tr>
+        <td style="background-color:{{ c1 }};"></td>
+        <td style="background-color:{{ c2 }};"></td>
+        <td style="background-color:{{ c3 }};"></td>
+      </tr>
+    </table>
+
+    <div class="body-pad">
+      <table class="route-table">
+        <tr>
+          <td>
+            <div class="label-sm">{{ _('Departure') }}</div>
+            <div class="city-name">{{ route.from }}</div>
+          </td>
+          <td class="right">
+            <div class="label-sm">{{ _('Arrival') }}</div>
+            <div class="city-name">{{ route.to }}</div>
+          </td>
+        </tr>
+      </table>
+
+      <div class="info-bar">
+        <strong>{{ _('Date:') }}</strong> {{ s.date }} &nbsp;&nbsp;&nbsp; <strong>{{ _('Time:') }}</strong> {{ s.time }} &nbsp;&nbsp;&nbsp; <strong>{{ _('Period:') }}</strong> {{ _(period_label) }}
+      </div>
+
+      <div class="dashed-top">
+        <table class="detail-table">
+          <tr>
+            <td>
+              <div class="detail-label">{{ _('Passenger') }}</div>
+              <div class="detail-value">{{ bk.passenger_name }}</div>
+            </td>
+            <td class="right">
+              <div class="detail-label">{{ _('Phone') }}</div>
+              <div class="detail-value">{{ bk.phone }}</div>
+            </td>
+          </tr>
+        </table>
+
+        <table class="detail-table" style="margin-top:10px;">
+          <tr>
+            <td>
+              <div class="detail-label">{{ _('Seat') }}</div>
+              <div>
+                <span class="seat-number">{{ bk.seat_number }}</span>
+                {% if bus.bus_type == 'vip' %}
+                <span class="vip-badge-bg">{{ _('VIP') }}</span>
+                {% else %}
+                <span class="standard-badge-bg">{{ _('STANDARD') }}</span>
+                {% endif %}
+              </div>
+            </td>
+            <td class="right">
+              <div class="detail-label">{{ _('Amount Paid') }}</div>
+              <div class="price-number">
+                {{ total_price|currency }}
+                <div class="vip-surcharge">{{ _('Transport:') }} {{ price|currency }}</div>
+              </div>
+            </td>
+          </tr>
+        </table>
+
+        <div class="divider-light"></div>
+
+        <table class="detail-table">
+          <tr>
+            <td>
+              <div class="detail-label">{{ _('Agency') }}</div>
+              <div class="detail-value">{{ agency.name }}</div>
+            </td>
+            <td class="right">
+              <div class="detail-label">{{ _('Bus') }}</div>
+              <div class="detail-value">{{ bus.plate }} <span style="color:#888;font-weight:400;">({{ bus.bus_type|upper }})</span></div>
+            </td>
+          </tr>
+          {% if luggage_fee %}
+          <tr>
+            <td style="padding-top:8px;">
+              <div class="detail-label">{{ _('Luggage') }}</div>
+              <div class="detail-value" style="color:#e65100;">{{ bk.get('luggage_weight', 0) }} kg</div>
+            </td>
+            <td class="right" style="padding-top:8px;">
+              <div class="detail-label">&nbsp;</div>
+              <div class="detail-value" style="color:#e65100;">+{{ luggage_fee|currency }}</div>
+            </td>
+          </tr>
+          {% endif %}
+        </table>
+      </div>
+    </div>
+
+    <div class="footer-bg">
+      <div class="footer-meta">
+        <span>{{ s.time }}</span>
+        <span>&#124;</span>
+        <span>{{ s.date }}</span>
+        <span>&#124;</span>
+        <span>{{ _('Seat') }} {{ bk.seat_number }}</span>
+      </div>
+      <div style="font-size:10px; margin-top:4px;">
+        {% if is_expired %}
+        <span style="color:#c62828; font-weight:700;">{{ _('TICKET EXPIRED') }}</span>
+        {% else %}
+        <span style="color:#2e7d32;">{{ _('Valid for this departure only') }}</span>
+        {% endif %}
+      </div>
+      <div class="footer-msg">{{ _('Show this ticket to the driver before boarding.') }}</div>
+      <div class="footer-time">{{ _('Booked on') }} {{ bk.created_at }} &bull; {{ _('AFRI Trans') }} {{ cname }}</div>
+    </div>
+  </div>
+</div>
+</body>
+</html>

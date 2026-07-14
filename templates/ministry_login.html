@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block title %}{{ _('Ministry of Transport') }} - {{ _(ministry_country.name) }}{% endblock %}
+{% block content %}
+<div style="max-width:400px; margin:60px auto;">
+    <div class="card" style="text-align:center;">
+        <div style="font-size:48px; margin-bottom:8px;"><i class="fas fa-building-columns" style="color:var(--flag-2);"></i></div>
+        <h2 style="color:#1a1a2e; font-size:20px; margin-bottom:4px;">{{ _('Ministry of Transport') }}</h2>
+        <p style="color:#888; font-size:13px; margin-bottom:4px;">{{ _(ministry_country.name) }}</p>
+        <p style="color:#888; font-size:13px; margin-bottom:20px;">{{ _('National transport oversight portal') }}</p>
+        <div style="background:#fef9e7; border:1px solid #f9e79f; border-radius:6px; padding:10px; margin-bottom:18px; font-size:12px; color:#7d6608; text-align:left;">
+            <i class="fas fa-shield-halved"></i> {{ _('Step 1 of 2: Enter the shared country password. You will be prompted for super admin credentials next.') }}
+        </div>
+        <form method="POST">
+            <div class="form-group">
+                <input type="password" name="password" class="form-control pw-field" placeholder="{{ _('Minister Password') }}" required autofocus>
+            </div>
+            <div style="text-align:right; margin-bottom:10px;">
+                <label class="pw-toggle"><input type="checkbox" onchange="toggleAllPasswords(this)"> {{ _('Show password') }}</label>
+            </div>
+            <button type="submit" class="btn btn-primary" style="width:100%;"><i class="fas fa-lock"></i> {{ _('Sign In') }}</button>
+        </form>
+        <p style="margin-top:16px; font-size:12px; color:#aaa;"><a href="{{ url_for('index') }}" style="color:var(--flag-1);">{{ _('Back to site') }}</a></p>
+    </div>
+</div>
+{% endblock %}
