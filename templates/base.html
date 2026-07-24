@@ -23,11 +23,26 @@
         <a href="{{ url_for('browse_agencies') }}" onclick="closeNav()">{{ _('Agencies') }}</a>
         <a href="{{ url_for('lookup') }}" onclick="closeNav()">{{ _('My Ticket') }}</a>
         <a href="{{ url_for('notifications') }}" onclick="closeNav()" style="position:relative;">
-            <i class="fas fa-bell" style="color:{% if total_ann_count > 0 %}#c62828{% else %}#888{% endif %};"></i>
-            {% if total_ann_count > 0 %}
-            <span style="position:absolute; top:-6px; right:-8px; background:#c62828; color:#fff; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px;">{{ total_ann_count }}</span>
-            {% endif %}
+            <i class="fas fa-bell" id="bellIcon" style="color:#888;"></i>
+            <span id="bellBadge" style="position:absolute; top:-6px; right:-8px; background:#c62828; color:#fff; font-size:9px; font-weight:800; min-width:16px; height:16px; border-radius:8px; display:flex; align-items:center; justify-content:center; padding:0 3px;"></span>
         </a>
+        <script>
+        (function(){
+            var ids = {{ all_ann_ids|tojson }};
+            var read = JSON.parse(localStorage.getItem('afri_read_anns') || '[]');
+            var unread = ids.filter(function(id){ return read.indexOf(id) === -1; });
+            var badge = document.getElementById('bellBadge');
+            var icon = document.getElementById('bellIcon');
+            if(unread.length > 0){
+                badge.textContent = unread.length;
+                badge.style.display = 'flex';
+                icon.style.color = '#c62828';
+            } else {
+                badge.style.display = 'none';
+                icon.style.color = '#888';
+            }
+        })();
+        </script>
         {% if session.agency_id %}
             <a href="{{ url_for('agency_dashboard') }}" onclick="closeNav()">{{ _('Dashboard') }}</a>
             <a href="{{ url_for('agency_logout') }}" style="background:#fee;color:#c62828;border-radius:8px;" onclick="closeNav()">{{ _('Logout') }}</a>
@@ -35,9 +50,15 @@
             <a href="{{ url_for('agency_login') }}" onclick="closeNav()">{{ _('Sign In') }}</a>
             <a href="{{ url_for('agency_register') }}" class="btn-accent" onclick="closeNav()">{{ _('Register') }}</a>
         {% endif %}
-        <a href="{{ url_for('ministry_login') }}" title="{{ _('Ministry of Transport') }}" onclick="closeNav()">
-            <i class="fas fa-building-columns"></i> <span class="nav-extra">{{ _('Ministry') }}</span>
-        </a>
+        {% if session.ministry %}
+            <a href="{{ url_for('ministry_dashboard') }}" onclick="closeNav()" title="{{ _('Ministry of Transport') }}">
+                <i class="fas fa-building-columns"></i> <span class="nav-extra">{{ _('Ministry') }}</span>
+            </a>
+        {% else %}
+            <a href="{{ url_for('ministry_login') }}" title="{{ _('Ministry of Transport') }}" onclick="closeNav()">
+                <i class="fas fa-building-columns"></i> <span class="nav-extra">{{ _('Ministry') }}</span>
+            </a>
+        {% endif %}
         {% if country_languages|length > 1 %}
         <div class="lang-group">
             {% for lc in country_languages %}
@@ -67,6 +88,11 @@
 
 <script>
 var CURRENCY_SYM = '{{ country.currency }}';
+function toggleAllPasswords(cb) {
+    document.querySelectorAll('.pw-field').forEach(function(el) {
+        el.type = cb.checked ? 'text' : 'password';
+    });
+}
 function toggleNav() {
     document.getElementById('navLinks').classList.toggle('nav-active');
 }
@@ -206,11 +232,16 @@ function filterCountries(q) {
     <div style="margin-top:8px;">
         <a href="{{ url_for('feedback') }}" style="color:var(--flag-1); text-decoration:none; font-weight:600; font-size:13px;"><i class="fas fa-comment-dots"></i> {{ _('Feedback') }}</a>
         <span style="color:#ccc; margin:0 6px;">|</span>
-        <a href="{{ url_for('admin_login') }}" style="color:#888; text-decoration:none; font-weight:600; font-size:13px;"><i class="fas fa-user-shield"></i> {{ _('Admin') }}</a>
+        {% if session.admin_logged_in %}
+            <a href="{{ url_for('admin_dashboard') }}" style="color:#888; text-decoration:none; font-weight:600; font-size:13px;"><i class="fas fa-user-shield"></i> {{ _('Admin') }}</a>
+        {% else %}
+            <a href="{{ url_for('admin_login') }}" style="color:#888; text-decoration:none; font-weight:600; font-size:13px;"><i class="fas fa-user-shield"></i> {{ _('Admin') }}</a>
+        {% endif %}
     </div>
     <div style="margin-top:4px; color:#aaa; font-size:12px;">
         &copy; 2026 AFRI Trans &mdash; {{ _('All rights reserved') }}
     </div>
 </footer>
+{% block scripts %}{% endblock %}
 </body>
 </html>

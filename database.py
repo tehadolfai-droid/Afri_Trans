@@ -1,7 +1,7 @@
 import sqlite3
 import json
 import os
-from datetime import datetime
+from datetime import datetime, timedelta
 
 DB_FILE = os.path.join(os.path.dirname(os.path.abspath(__file__)), 'data.db')
 
@@ -95,7 +95,7 @@ def init_db():
             created_at TEXT NOT NULL,
             reset_token TEXT,
             reset_token_expiry TEXT,
-            UNIQUE(email, country_code)
+            UNIQUE(email)
         );
         CREATE TABLE IF NOT EXISTS meta (
             key TEXT PRIMARY KEY,
@@ -144,6 +144,15 @@ def init_db():
             currency TEXT UNIQUE NOT NULL,
             monthly_price INTEGER NOT NULL
         );
+        CREATE TABLE IF NOT EXISTS trip_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            schedule_id INTEGER NOT NULL REFERENCES schedules(id) ON DELETE CASCADE,
+            agency_id INTEGER NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+            expenses INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        );
+        CREATE INDEX IF NOT EXISTS idx_trip_reports_schedule ON trip_reports(schedule_id);
+        CREATE INDEX IF NOT EXISTS idx_trip_reports_agency ON trip_reports(agency_id);
         CREATE INDEX IF NOT EXISTS idx_bookings_schedule ON bookings(schedule_id);
         CREATE INDEX IF NOT EXISTS idx_bookings_passenger ON bookings(passenger_id);
         CREATE UNIQUE INDEX IF NOT EXISTS idx_bookings_seat ON bookings(schedule_id, seat_number) WHERE seat_number IS NOT NULL;
@@ -206,6 +215,27 @@ def init_db():
     # Add vip_price column for per-bus VIP pricing
     try:
         db.execute("ALTER TABLE buses ADD COLUMN vip_price REAL DEFAULT NULL")
+    except sqlite3.OperationalError:
+        pass
+    # Create trip_reports table for existing databases
+    try:
+        db.execute("SELECT 1 FROM trip_reports LIMIT 1")
+    except sqlite3.OperationalError:
+        db.execute("""CREATE TABLE IF NOT EXISTS trip_reports (
+            id INTEGER PRIMARY KEY AUTOINCREMENT,
+            schedule_id INTEGER NOT NULL REFERENCES schedules(id) ON DELETE CASCADE,
+            agency_id INTEGER NOT NULL REFERENCES agencies(id) ON DELETE CASCADE,
+            expenses INTEGER NOT NULL DEFAULT 0,
+            created_at TEXT NOT NULL
+        )""")
+        try:
+            db.execute("CREATE INDEX IF NOT EXISTS idx_trip_reports_schedule ON trip_reports(schedule_id)")
+            db.execute("CREATE INDEX IF NOT EXISTS idx_trip_reports_agency ON trip_reports(agency_id)")
+        except sqlite3.OperationalError:
+            pass
+    # Add expenses column to trip_reports if missing
+    try:
+        db.execute("ALTER TABLE trip_reports ADD COLUMN expenses INTEGER NOT NULL DEFAULT 0")
     except sqlite3.OperationalError:
         pass
     db.commit()
@@ -342,9 +372,12 @@ def get_approved_agencies_by_country(code):
     db.close()
     return [agency_from_row(r) for r in rows]
 
-def get_approved_agencies_contact():
+def get_approved_agencies_contact(country=None):
     db = get_db()
-    rows = db.execute("SELECT id, name, whatsapp FROM agencies WHERE approved = 1 AND whatsapp != '' ORDER BY name").fetchall()
+    if country:
+        rows = db.execute("SELECT id, name, whatsapp FROM agencies WHERE approved = 1 AND whatsapp != '' AND country = ? ORDER BY name", (country,)).fetchall()
+    else:
+        rows = db.execute("SELECT id, name, whatsapp FROM agencies WHERE approved = 1 AND whatsapp != '' ORDER BY name").fetchall()
     db.close()
     return [dict(r) for r in rows]
 
@@ -398,9 +431,9 @@ def agency_name_exists(name, country):
     db.close()
     return r is not None
 
-def get_agency_by_email(email, country):
+def get_agency_by_email(email, country=None):
     db = get_db()
-    r = db.execute("SELECT * FROM agencies WHERE LOWER(email) = LOWER(?) AND country = ?", (email, country)).fetchone()
+    r = db.execute("SELECT * FROM agencies WHERE LOWER(email) = LOWER(?)", (email,)).fetchone()
     db.close()
     return agency_from_row(r) if r else None
 
@@ -713,9 +746,9 @@ def mark_shared_pw_used(country_code):
 
 # ── CRUD: Super Admins ──
 
-def get_super_admin_by_email(email, country_code):
+def get_super_admin_by_email(email, country_code=None):
     db = get_db()
-    r = db.execute("SELECT * FROM super_admins WHERE LOWER(email) = LOWER(?) AND country_code = ?", (email, country_code)).fetchone()
+    r = db.execute("SELECT * FROM super_admins WHERE LOWER(email) = LOWER(?)", (email,)).fetchone()
     db.close()
     return dict(r) if r else None
 
@@ -726,6 +759,8 @@ def get_super_admin_by_country(country_code):
     return dict(r) if r else None
 
 def add_super_admin(email, password_hash, country_code):
+    if get_super_admin_by_email(email):
+        return None
     now = datetime.now().strftime('%Y-%m-%d %H:%M')
     db = get_db()
     c = db.execute(
@@ -980,5 +1015,52 @@ def set_subscription_price(currency, monthly_price):
         db.execute("UPDATE subscription_prices SET monthly_price = ? WHERE currency = ?", (monthly_price, currency))
     else:
         db.execute("INSERT INTO subscription_prices (currency, monthly_price) VALUES (?, ?)", (currency, monthly_price))
+    db.commit()
+    db.close()
+
+# ── CRUD: Trip Reports ──
+
+def add_trip_report(schedule_id, agency_id, expenses=0):
+    db = get_db()
+    existing = db.execute("SELECT id FROM trip_reports WHERE schedule_id = ?", (schedule_id,)).fetchone()
+    if existing:
+        db.execute("UPDATE trip_reports SET expenses=? WHERE schedule_id=?", (expenses, schedule_id))
+    else:
+        now = datetime.now().strftime('%Y-%m-%d %H:%M')
+        db.execute("INSERT INTO trip_reports (schedule_id, agency_id, expenses, created_at) VALUES (?, ?, ?, ?)",
+                   (schedule_id, agency_id, expenses, now))
+    db.commit()
+    db.close()
+
+def get_trip_report(schedule_id):
+    db = get_db()
+    r = db.execute("SELECT * FROM trip_reports WHERE schedule_id = ?", (schedule_id,)).fetchone()
+    db.close()
+    return dict(r) if r else None
+
+def get_trip_reports_by_agency(agency_id, limit=20, offset=0):
+    db = get_db()
+    rows = db.execute("SELECT * FROM trip_reports WHERE agency_id = ? ORDER BY id DESC LIMIT ? OFFSET ?",
+                      (agency_id, limit, offset)).fetchall()
+    db.close()
+    return rows_to_list(rows)
+
+def get_trip_report_count(agency_id):
+    db = get_db()
+    r = db.execute("SELECT COUNT(*) as cnt FROM trip_reports WHERE agency_id = ?", (agency_id,)).fetchone()
+    db.close()
+    return r['cnt'] if r else 0
+
+def cleanup_old_trip_reports(days=365):
+    db = get_db()
+    cutoff = (datetime.now() - timedelta(days=days)).strftime('%Y-%m-%d %H:%M')
+    db.execute("DELETE FROM trip_reports WHERE created_at < ?", (cutoff,))
+    db.commit()
+    db.close()
+
+def expire_unpaid_bookings(minutes=30):
+    cutoff = (datetime.now() - timedelta(minutes=minutes)).strftime('%Y-%m-%d %H:%M')
+    db = get_db()
+    db.execute("UPDATE bookings SET seat_number = NULL, status = 'expired' WHERE paid = 0 AND status = 'pending' AND created_at < ?", (cutoff,))
     db.commit()
     db.close()

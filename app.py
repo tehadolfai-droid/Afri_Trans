@@ -29,10 +29,12 @@ from database import (
     add_feedback, get_all_feedback,
     get_all_agencies, get_all_subscriptions, get_total_commission_global,
     get_subscription_prices, set_subscription_price,
+    add_trip_report, get_trip_report, get_trip_reports_by_agency, get_trip_report_count, cleanup_old_trip_reports, expire_unpaid_bookings,
 )
 
 app = Flask(__name__)
 app.secret_key = 'afritrans-secret-2026'
+app.permanent_session_lifetime = timedelta(days=15)
 
 # ── Email Configuration (set env vars or edit directly) ──
 MAIL_SERVER   = os.environ.get('MAIL_SERVER', 'smtp.gmail.com')
@@ -253,8 +255,8 @@ def inject_globals():
     country_code = session.get('country', 'cm')
     c = COUNTRIES.get(country_code, COUNTRIES['cm'])
     all_anns = get_announcements(active_only=True, country=country_code)
-    read_ids = set(session.get('read_notification_ids', []))
-    unread_count = len([a for a in all_anns if a['id'] not in read_ids])
+    all_ann_ids = [a['id'] for a in all_anns]
+    unread_count = len(all_anns)
     def ann_msg(ann):
         lang = get_current_lang()
         LANG_COL = {
@@ -272,7 +274,7 @@ def inject_globals():
     def flag_emoji(code):
         if not code or len(code) != 2: return ''
         return chr(127462 + ord(code[0]) - 97) + chr(127462 + ord(code[1]) - 97)
-    return dict(_=_, current_lang=get_current_lang(), ann_msg=ann_msg, cities=c['cities'], country=c, country_code=country_code, COUNTRIES=COUNTRIES, today=date.today().isoformat(), country_languages=c.get('languages', ['en']), vip_surcharge=c.get('vip_surcharge', 3000), country_providers=get_country_providers(), total_ann_count=unread_count, read_ids=read_ids, flag_emoji=flag_emoji)
+    return dict(_=_, current_lang=get_current_lang(), ann_msg=ann_msg, cities=c['cities'], country=c, country_code=country_code, COUNTRIES=COUNTRIES, today=date.today().isoformat(), country_languages=c.get('languages', ['en']), vip_surcharge=c.get('vip_surcharge', 3000), country_providers=get_country_providers(), total_ann_count=unread_count, all_ann_ids=all_ann_ids, flag_emoji=flag_emoji)
 
 @app.route('/feedback', methods=['GET', 'POST'])
 def feedback():
@@ -822,8 +824,7 @@ def search():
 @app.route('/notifications')
 def notifications():
     anns = get_announcements(active_only=True, country=session.get('country', 'cm'))
-    read_ids = set(session.get('read_notification_ids', []))
-    resp = make_response(render_template('notifications.html', announcements=anns, read_ids=read_ids))
+    resp = make_response(render_template('notifications.html', announcements=anns))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
     resp.headers['Pragma'] = 'no-cache'
     resp.headers['Expires'] = '0'
@@ -835,10 +836,6 @@ def notification_detail(nid):
     ann = next((a for a in all_anns if a['id'] == nid), None)
     if not ann:
         return _('Announcement not found or has been removed.'), 404
-    read_ids = set(session.get('read_notification_ids', []))
-    if nid not in read_ids:
-        read_ids.add(nid)
-        session['read_notification_ids'] = list(read_ids)
     agency = get_agency(ann['agency_id'])
     resp = make_response(render_template('notification_detail.html', ann=ann, agency=agency))
     resp.headers['Cache-Control'] = 'no-store, no-cache, must-revalidate, max-age=0'
@@ -1209,7 +1206,8 @@ def seat_status(sid):
 
 @app.route('/api/agencies')
 def api_agencies():
-    agencies = get_approved_agencies_contact()
+    country = session.get('country')
+    agencies = get_approved_agencies_contact(country)
     return {'agencies': agencies}
 
 # ============================================================
@@ -1295,6 +1293,7 @@ def agency_login():
         elif not check_password_hash(a['password'], pw):
             flash(_('Incorrect agency name or password.'), 'error'); return render_template('agency_login.html')
         session['agency_id'] = a['id']
+        session.permanent = True
         login_attempts.pop(ip, None)  # clear on success
         return redirect(url_for('agency_dashboard'))
     return render_template('agency_login.html')
@@ -1377,10 +1376,25 @@ def get_agency_session():
         return None
     return a
 
+def auto_revert_bus_status(agency_id):
+    today_str = date.today().isoformat()
+    buses = get_buses_by_agency(agency_id)
+    routes = get_routes_by_agency(agency_id)
+    all_schedules = get_schedules_by_route_ids([r['id'] for r in routes])
+    active_bus_ids = set(s['bus_id'] for s in all_schedules if s['date'] >= today_str and s.get('status') not in ('cancelled',))
+    db = get_db()
+    for b in buses:
+        if b['status'] == 'busy' and b['id'] not in active_bus_ids:
+            db.execute("UPDATE buses SET status = 'available' WHERE id = ?", (b['id'],))
+    db.commit()
+    db.close()
+
 @app.route('/agency/dashboard')
 def agency_dashboard():
     a = get_agency_session()
     if not a: return redirect(url_for('agency_login'))
+    auto_revert_bus_status(a['id'])
+    expire_unpaid_bookings(30)
     buses = get_buses_by_agency(a['id'])
     routes = get_routes_by_agency(a['id'])
     route_ids = [r['id'] for r in routes]
@@ -1410,11 +1424,11 @@ def agency_dashboard():
             revenue_by_route[key] = revenue_by_route.get(key, 0) + amt
     revenue_by_route = dict(sorted(revenue_by_route.items(), key=lambda x: -x[1]))
     agency_commission = get_total_commission(agency_ids=[a['id']])
-    total_bookings = len(all_bookings)
-    confirmed = len([b for b in all_bookings if b.get('status') == 'confirmed'])
-    pending_bk = len([b for b in all_bookings if b.get('status') == 'pending'])
+    total_bookings = len([b for b in all_bookings if b.get('paid')])
+    confirmed = len([b for b in all_bookings if b.get('paid') and b.get('status') == 'confirmed'])
+    pending_bk = len([b for b in all_bookings if b.get('paid') and b.get('status') == 'pending'])
     cancelled_bk = len([b for b in all_bookings if b.get('status') == 'cancelled'])
-    recent_bookings = sorted(all_bookings, key=lambda x: x.get('created_at', ''), reverse=True)[:8]
+    recent_bookings = sorted([b for b in all_bookings if b.get('paid')], key=lambda x: x.get('created_at', ''), reverse=True)[:8]
     for rb in recent_bookings:
         s = next((x for x in all_schedules if x['id'] == rb['schedule_id']), None)
         rb['_route'] = next((r for r in routes if r['id'] == (s['route_id'] if s else None)), None) if s else None
@@ -1423,7 +1437,59 @@ def agency_dashboard():
     today_trips = [s for s in schedules if s['date'] == today_str]
     sub = get_active_subscription(a['id'])
     curr = COUNTRIES.get(session.get('country', 'cm'), COUNTRIES['cm'])['currency_code']
-    return render_template('agency_dashboard.html', agency=a, buses=buses, routes=routes, schedules=schedules, bookings_count=total_bookings, periods=PERIODS, total_revenue=total_revenue, total_commission=agency_commission, revenue_by_route=revenue_by_route, confirmed_count=confirmed, pending_count=pending_bk, cancelled_count=cancelled_bk, recent_bookings=recent_bookings, today_trips=today_trips, sub=sub, sub_prices=SUBSCRIPTION_PRICES.get(curr, {}))
+
+    past_schedules = [s for s in all_schedules if s['date'] <= today_str]
+    past_schedules.sort(key=lambda x: (x['date'], x['time']), reverse=True)
+    past_trip_reports = []
+    for s in past_schedules:
+        route = next((r for r in routes if r['id'] == s['route_id']), None)
+        bus = next((b for b in buses if b['id'] == s['bus_id']), None)
+        bkgs = [bk for bk in all_bookings if bk['schedule_id'] == s['id']]
+        paid_bkgs = [bk for bk in bkgs if bk.get('paid')]
+        taken = len(paid_bkgs)
+        capacity = bus['capacity'] if bus else 0
+        ticket_revenue = 0
+        luggage_revenue = 0
+        for bk in paid_bkgs:
+            if route:
+                vs = bus.get('vip_price') if bus and bus.get('vip_price') is not None else COUNTRIES.get(session.get('country', 'cm'), COUNTRIES['cm']).get('vip_surcharge', 0)
+                vip_extra = vs if (bus and bus['bus_type'] == 'vip') else 0
+                ticket_revenue += route['price'] + vip_extra
+                luggage_revenue += bk.get('luggage_fee', 0)
+        total_rev = ticket_revenue + luggage_revenue
+        tr = get_trip_report(s['id'])
+        expenses = 0
+        if tr:
+            expenses = tr['expenses']
+        profit = total_rev - expenses
+        past_trip_reports.append({
+            'schedule': s, 'route': route, 'bus': bus,
+            'booked': taken, 'capacity': capacity,
+            'ticket_revenue': ticket_revenue, 'luggage_revenue': luggage_revenue,
+            'total_revenue': total_rev, 'expenses': expenses, 'report': tr, 'profit': profit
+        })
+    cleanup_old_trip_reports(365)
+
+    total_expenses = sum(tr['expenses'] for tr in past_trip_reports)
+    total_commission_taken = agency_commission if not sub else 0
+    agency_net = total_revenue - total_commission_taken
+    total_profit = agency_net - total_expenses
+
+    return render_template('agency_dashboard.html', agency=a, buses=buses, routes=routes, schedules=schedules, bookings_count=total_bookings, periods=PERIODS, total_revenue=total_revenue, agency_net=agency_net, total_expenses=total_expenses, total_profit=total_profit, total_commission_taken=total_commission_taken, revenue_by_route=revenue_by_route, confirmed_count=confirmed, pending_count=pending_bk, cancelled_count=cancelled_bk, recent_bookings=recent_bookings, today_trips=today_trips, sub=sub, sub_prices=SUBSCRIPTION_PRICES.get(curr, {}), country=COUNTRIES.get(session.get('country','cm'), COUNTRIES['cm']), past_trip_reports=past_trip_reports)
+
+@app.route('/api/agency/trip-report', methods=['POST'])
+def agency_trip_report_save():
+    try:
+        a = get_agency_session()
+        if not a: return {'ok': False, 'error': 'Not logged in'}
+        sid = request.form.get('schedule_id', '').strip()
+        if not sid or not sid.isdigit(): return {'ok': False, 'error': 'Invalid schedule'}
+        sid = int(sid)
+        expenses = int(request.form.get('expenses', '0') or '0')
+        add_trip_report(sid, a['id'], expenses)
+        return {'ok': True}
+    except Exception as ex:
+        return {'ok': False, 'error': f'{type(ex).__name__}: {str(ex)[:200]}'}
 
 @app.route('/agency/subscribe')
 def agency_subscribe():
@@ -1525,6 +1591,7 @@ def agency_subscription():
 def agency_buses():
     a = get_agency_session()
     if not a: return redirect(url_for('agency_login'))
+    auto_revert_bus_status(a['id'])
     return render_template('agency_buses.html', agency=a, buses=get_buses_by_agency(a['id']))
 
 @app.route('/agency/buses/add', methods=['GET', 'POST'])
@@ -1846,6 +1913,7 @@ def ministry_relogin():
                 flash(_('Invalid email or password.'), 'error')
                 return redirect(url_for('ministry_relogin'))
             session['ministry'] = True
+            session.permanent = True
             session['super_admin_id'] = admin['id']
             session['super_admin_email'] = admin['email']
             login_attempts.pop(ip, None)
@@ -1954,13 +2022,29 @@ def ministry_dashboard():
     schedule_ids = []
     all_bookings_list = []
     all_schedules_list = []
-    for aid in agency_ids:
-        bus_list.extend(get_buses_by_agency(aid))
-        routes = get_routes_by_agency(aid)
-        all_routes.extend(routes)
-        scheds = get_schedules_by_route_ids([r['id'] for r in routes])
-        all_schedules_list.extend(scheds)
-        schedule_ids.extend([s['id'] for s in scheds])
+    agency_stats = {}
+    for a in agencies:
+        aid = a['id']
+        ag_buses = get_buses_by_agency(aid)
+        ag_routes = get_routes_by_agency(aid)
+        ag_scheds = get_schedules_by_route_ids([r['id'] for r in ag_routes])
+        ag_sched_ids = [s['id'] for s in ag_scheds]
+        ag_bookings = get_bookings_by_schedule_ids(ag_sched_ids)
+        ag_paid = [bk for bk in ag_bookings if bk.get('paid')]
+        ag_revenue = 0
+        for bk in ag_paid:
+            s = next((x for x in ag_scheds if x['id'] == bk['schedule_id']), None)
+            rt = next((r for r in ag_routes if r['id'] == (s['route_id'] if s else None)), None) if s else None
+            if rt:
+                bus = next((b for b in ag_buses if b['id'] == (s['bus_id'] if s else None)), None) if s else None
+                vs = bus.get('vip_price') if bus and bus.get('vip_price') is not None else c.get('vip_surcharge', 0)
+                vip_extra = vs if (bus and bus.get('bus_type') == 'vip') else 0
+                ag_revenue += rt['price'] + vip_extra + bk.get('luggage_fee', 0)
+        agency_stats[aid] = {'buses': ag_buses, 'routes': ag_routes, 'revenue': ag_revenue, 'bookings': len(ag_paid)}
+        bus_list.extend(ag_buses)
+        all_routes.extend(ag_routes)
+        all_schedules_list.extend(ag_scheds)
+        schedule_ids.extend(ag_sched_ids)
     all_bookings_list = get_bookings_by_schedule_ids(schedule_ids)
     total_agencies = len(agencies)
     pending_agencies = sum(1 for a in agencies if not a.get('approved', False))
@@ -1974,7 +2058,7 @@ def ministry_dashboard():
         for bk in all_bookings_list if bk.get('paid')
     )
     total_commission = get_total_commission(agency_ids=agency_ids if agency_ids else None)
-    return render_template('ministry_dashboard.html', mc=mc, c=c, agencies=agencies, total_agencies=total_agencies, pending_agencies=pending_agencies, total_bookings=total_bookings, total_revenue=total_revenue, total_buses=total_buses, total_routes=total_routes, total_schedules=total_schedules, active_schedules=active_schedules, total_commission=total_commission)
+    return render_template('ministry_dashboard.html', mc=mc, c=c, agencies=agencies, agency_stats=agency_stats, total_agencies=total_agencies, pending_agencies=pending_agencies, total_bookings=total_bookings, total_revenue=total_revenue, total_buses=total_buses, total_routes=total_routes, total_schedules=total_schedules, active_schedules=active_schedules, total_commission=total_commission)
 
 @app.route('/ministry/agencies')
 def ministry_agencies():
@@ -2059,6 +2143,7 @@ def admin_login():
         pw = request.form.get('password', '').strip()
         if pw == ADMIN_PASSWORD:
             session['admin_logged_in'] = True
+            session.permanent = True
             return redirect(url_for('admin_dashboard'))
         flash(_('Incorrect password.'), 'error')
     return render_template('admin_login.html')

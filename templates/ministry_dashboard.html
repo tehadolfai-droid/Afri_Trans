@@ -35,37 +35,37 @@
     </div>
 </div>
 
-<div class="grid-2" style="margin-bottom:20px;">
-    <div class="card">
-        <h3 class="card-title"><i class="fas fa-truck"></i> {{ _('National Fleet Overview') }}</h3>
-        <div class="table-wrap"><table>
-            <tr><td>{{ _('Total Buses') }}</td><td><strong>{{ total_buses }}</strong></td></tr>
-            <tr><td>{{ _('Total Routes') }}</td><td><strong>{{ total_routes }}</strong></td></tr>
-            <tr><td>{{ _('Total Schedules') }}</td><td><strong>{{ total_schedules }}</strong></td></tr>
-        </table></div>
-    </div>
-    <div class="card">
-        <h3 class="card-title"><i class="fas fa-building"></i> {{ _('Agencies') }}</h3>
-        <div class="table-wrap"><table>
-            {% for a in agencies %}
-            <tr>
-                <td>{{ a.name }}</td>
-                <td>
-                    {% if a.get('approved') %}
-                    <span class="badge badge-green">{{ _('Approved') }}</span>
-                    {% elif a.get('rejection_reason') %}
-                    <span class="badge badge-red">{{ _('Rejected') }}</span>
-                    {% else %}
-                    <span class="badge badge-orange">{{ _('PENDING') }}</span>
-                    {% endif %}
-                </td>
-            </tr>
-            {% endfor %}
-        </table></div>
-        {% if not agencies %}
-        <p style="color:#888; font-size:13px;">{{ _('No agencies registered yet.') }}</p>
-        {% endif %}
-    </div>
+<div class="card" style="margin-bottom:20px;">
+    <h3 class="card-title"><i class="fas fa-truck" style="color:var(--flag-1);"></i> {{ _('All Agencies Fleet Overview') }}</h3>
+    <div class="table-wrap"><table>
+        <tr>
+            <th>{{ _('Agency') }}</th>
+            <th>{{ _('Buses') }}</th>
+            <th>{{ _('Routes') }}</th>
+            <th>{{ _('Revenue') }}</th>
+        </tr>
+        {% for a in agencies %}
+        {% set stats = agency_stats.get(a.id, {}) %}
+        <tr>
+            <td><strong>{{ a.name }}</strong>
+                <div style="font-size:11px; color:#888;">
+                    {% if a.get('approved') %}<span class="badge badge-green">{{ _('Approved') }}</span>
+                    {% elif a.get('rejection_reason') %}<span class="badge badge-red">{{ _('Rejected') }}</span>
+                    {% else %}<span class="badge badge-orange">{{ _('Pending') }}</span>{% endif %}
+                </div>
+            </td>
+            <td><strong>{{ stats.get('buses', [])|length }}</strong></td>
+            <td><strong>{{ stats.get('routes', [])|length }}</strong></td>
+            <td><strong style="color:var(--flag-1);">{{ "{:,}".format(stats.get('revenue', 0)) }} {{ c.currency }}</strong></td>
+        </tr>
+        {% endfor %}
+        <tr style="background:#f0fdf4; font-weight:700;">
+            <td>{{ _('TOTAL') }}</td>
+            <td>{{ total_buses }}</td>
+            <td>{{ total_routes }}</td>
+            <td>{{ "{:,}".format(total_revenue) }} {{ c.currency }}</td>
+        </tr>
+    </table></div>
 </div>
 
 <div style="display:flex; gap:12px; flex-wrap:wrap;">

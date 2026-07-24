@@ -4,16 +4,12 @@
 <h2 class="h2-like" style="margin-bottom:16px;"><i class="fas fa-bell" style="color:var(--flag-2);"></i> {{ _('Notifications') }}</h2>
 
 {% if announcements %}
-<div class="card" style="padding:0;">
+<div class="card" style="padding:0;" id="notifCard">
     {% for ann in announcements %}
-    {% set is_read = ann.id in read_ids %}
-    {% set is_new = not is_read %}
-    <div style="display:flex; align-items:flex-start; gap:12px; padding:16px 20px; {% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %} {% if is_new %}background:#f8fffe;{% endif %}">
-        <div style="flex-shrink:0; width:36px; height:36px; border-radius:50%; background:{% if is_new %}#e8f5e9{% else %}#f5f5f5{% endif %}; display:flex; align-items:center; justify-content:center; position:relative;">
-            <i class="fas fa-bullhorn" style="color:{% if is_new %}var(--flag-1){% else %}#999{% endif %}; font-size:16px;"></i>
-            {% if not is_read %}
-            <span style="position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; background:#2196f3; border:2px solid #fff;"></span>
-            {% endif %}
+    <div class="notif-row" data-id="{{ ann.id }}" style="display:flex; align-items:flex-start; gap:12px; padding:16px 20px; {% if not loop.last %}border-bottom:1px solid #f0f0f0;{% endif %} background:#f0fdf4;">
+        <div class="notif-icon" style="flex-shrink:0; width:36px; height:36px; border-radius:50%; display:flex; align-items:center; justify-content:center; position:relative; background:#e8f5e9;">
+            <i class="fas fa-bullhorn" style="font-size:16px; color:var(--flag-1);"></i>
+            <span class="notif-dot" style="position:absolute; top:-2px; right:-2px; width:10px; height:10px; border-radius:50%; border:2px solid #fff; display:none;"></span>
         </div>
         <div style="flex:1; min-width:0;">
             <div style="display:flex; align-items:center; gap:8px; flex-wrap:wrap;">
@@ -24,7 +20,7 @@
                     {% elif ann.badge == 'UPDATE' %}background:#fff3e0; color:#e65100;
                     {% else %}background:#f3e5f5; color:#7b1fa2;
                     {% endif %}">{{ ann.badge }}</span>
-                {% if is_new %}<span class="badge badge-green">{{ _('NEW') }}</span>{% endif %}
+                <span class="notif-new-badge badge badge-green" style="display:none;">{{ _('NEW') }}</span>
             </div>
             <div style="font-size:14px; color:#333; margin-top:4px;">{{ ann_msg(ann) }}</div>
             <div style="font-size:11px; color:#999; margin-top:4px;">
@@ -33,9 +29,7 @@
         </div>
         <div style="flex-shrink:0; display:flex; flex-direction:column; align-items:flex-end; gap:4px;">
             <a href="{{ url_for('notification_detail', nid=ann.id) }}" class="btn btn-sm btn-outline">{{ _('Read More') }}</a>
-            {% if is_read %}
-            <span style="font-size:10px; color:#4caf50;"><i class="fas fa-check-circle"></i> {{ _('Read') }}</span>
-            {% endif %}
+            <span class="notif-read-label" style="font-size:10px; color:#4caf50; display:none;"><i class="fas fa-check-circle"></i> {{ _('Read') }}</span>
         </div>
     </div>
     {% endfor %}
@@ -47,4 +41,32 @@
     <p style="color:#888; margin-top:4px;">{{ _('Agency announcements will appear here.') }}</p>
 </div>
 {% endif %}
+<script>
+(function(){
+    var read = JSON.parse(localStorage.getItem('afri_read_anns') || '[]');
+    document.querySelectorAll('.notif-row').forEach(function(row){
+        var id = parseInt(row.getAttribute('data-id'));
+        var isRead = read.indexOf(id) !== -1;
+        var icon = row.querySelector('.notif-icon');
+        var dot = row.querySelector('.notif-dot');
+        var newBadge = row.querySelector('.notif-new-badge');
+        var readLabel = row.querySelector('.notif-read-label');
+        if(isRead){
+            row.style.background = '#ffffff';
+            icon.style.background = '#f5f5f5';
+            icon.querySelector('i').style.color = '#999';
+            dot.style.display = 'none';
+            newBadge.style.display = 'none';
+            readLabel.style.display = '';
+        } else {
+            icon.style.background = '#e8f5e9';
+            icon.querySelector('i').style.color = 'var(--flag-1)';
+            dot.style.display = 'block';
+            dot.style.background = '#2196f3';
+            newBadge.style.display = '';
+            readLabel.style.display = 'none';
+        }
+    });
+})();
+</script>
 {% endblock %}

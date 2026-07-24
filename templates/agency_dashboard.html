@@ -59,19 +59,32 @@
 </div>
 {% endif %}
 
-{% if total_revenue > 0 %}
-<div class="grid-2" style="margin-bottom:20px;">
-    <div class="card text-center" style="padding:18px; border-color:var(--flag-1);">
-        <div style="font-size:24px; color:var(--flag-1); font-weight:800;">{{ "{:,}".format(total_revenue) }}</div>
-        <div style="color:#888; font-size:13px;">{{ _('Total Revenue') }} ({{ country.currency }})</div>
+{% if total_revenue > 0 or total_expenses > 0 or past_trip_reports %}
+<div style="display:flex; gap:12px; margin-bottom:20px; flex-wrap:wrap;">
+    <div class="card text-center" style="flex:1; min-width:180px; padding:14px; border-top:3px solid var(--flag-1);">
+        <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">{{ _('Total Revenue') }}</div>
+        <div style="font-size:20px; color:var(--flag-1); font-weight:800; margin-top:4px;">{{ "{:,}".format(agency_net) }} <span style="font-size:12px; font-weight:400;">{{ country.currency }}</span></div>
+        <div style="color:#999; font-size:11px; margin-top:2px;">{{ _('After commission') }}</div>
     </div>
-    <div class="card text-center" style="padding:18px; background:#f9fafb;">
+    <div class="card text-center" style="flex:1; min-width:180px; padding:14px; border-top:3px solid var(--flag-3);">
+        <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">{{ _('Expenditures') }}</div>
+        <div style="font-size:20px; color:var(--flag-3); font-weight:800; margin-top:4px;">{{ "{:,}".format(total_expenses) }} <span style="font-size:12px; font-weight:400;">{{ country.currency }}</span></div>
+        <div style="color:#999; font-size:11px; margin-top:2px;">{{ _('From trip expenses logged') }}</div>
+    </div>
+    <div class="card text-center" style="flex:1; min-width:180px; padding:14px; border-top:3px solid {% if total_profit >= 0 %}#2e7d32{% else %}#c62828{% endif %};">
+        <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">{{ _('Profit') }}</div>
+        <div style="font-size:20px; color:{% if total_profit >= 0 %}#2e7d32{% else %}#c62828{% endif %}; font-weight:800; margin-top:4px;">{{ "{:,}".format(total_profit) }} <span style="font-size:12px; font-weight:400;">{{ country.currency }}</span></div>
+        <div style="color:#999; font-size:11px; margin-top:2px;">{{ _('Revenue − Expenditures') }}</div>
+    </div>
+    <div class="card text-center" style="flex:1; min-width:180px; padding:14px; border-top:3px solid var(--flag-2);">
         {% if sub %}
-        <div style="font-size:14px; color:var(--flag-1); font-weight:600;"><i class="fas fa-shield-alt"></i> {{ _('Commission Exempt') }}</div>
-        <div style="color:#888; font-size:12px; margin-top:4px;">{{ _('Subscription active until') }} {{ sub.end_date }}</div>
+        <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">{{ _('Platform Commission') }}</div>
+        <div style="font-size:16px; color:#2e7d32; font-weight:600; margin-top:6px;"><i class="fas fa-shield-alt"></i> {{ _('Commission Exempt') }}</div>
+        <div style="color:#888; font-size:11px; margin-top:4px;">{{ _('Subscription active until') }} {{ sub.end_date }}</div>
         {% else %}
-        <div style="font-size:14px; color:var(--flag-3); font-weight:600;"><i class="fas fa-info-circle"></i> {{ _('Platform Commission (1%)') }}</div>
-        <div style="color:#888; font-size:12px; margin-top:4px;">{{ _('Deducted automatically per booking') }} &middot; <a href="{{ url_for('agency_subscribe') }}" style="color:var(--flag-1); font-weight:600;">{{ _('Get exempt') }}</a></div>
+        <div style="font-size:11px; color:#888; text-transform:uppercase; letter-spacing:0.5px;">{{ _('Platform Commission') }}</div>
+        <div style="font-size:14px; color:#c62828; font-weight:700; margin-top:6px;">{{ _('1% charged per booking') }}</div>
+        <div style="color:#888; font-size:11px; margin-top:4px;">{{ _('Deducted from each ticket sold') }} &middot; <a href="{{ url_for('agency_subscribe') }}" style="color:#2e7d32; font-weight:600;">{{ _('Get exempt') }}</a></div>
         {% endif %}
     </div>
 </div>
@@ -98,6 +111,98 @@
     </table></div>
 </div>
 {% endif %}
+{% endif %}
+
+{% if past_trip_reports %}
+<div class="card" style="margin-bottom:20px;">
+    <h3 class="card-title"><i class="fas fa-clipboard-list" style="color:var(--flag-1);"></i> {{ _('Trip Reports') }}</h3>
+    {% set ns = namespace(routes=[]) %}
+    {% set ns2 = namespace(dates=[]) %}
+    {% set ns3 = namespace(buses=[]) %}
+    {% for tr in past_trip_reports %}
+        {% set rname = (tr.route.from if tr.route else '?') ~ ' → ' ~ (tr.route.to if tr.route else '?') %}
+        {% if rname not in ns.routes %}{% set ns.routes = ns.routes + [rname] %}{% endif %}
+        {% if tr.schedule.date not in ns2.dates %}{% set ns2.dates = ns2.dates + [tr.schedule.date] %}{% endif %}
+        {% set bplate = tr.bus.plate if tr.bus else '-' %}
+        {% if bplate not in ns3.buses %}{% set ns3.buses = ns3.buses + [bplate] %}{% endif %}
+    {% endfor %}
+    <div style="display:flex; gap:8px; flex-wrap:wrap; align-items:center; margin-bottom:12px;">
+        <select id="filterRoute" onchange="filterTrips()" class="form-control" style="width:auto; font-size:13px; padding:6px 10px;">
+            <option value="">{{ _('All Routes') }}</option>
+            {% for r in ns.routes %}<option value="{{ r }}">{{ r }}</option>{% endfor %}
+        </select>
+        <select id="filterDate" onchange="filterTrips()" class="form-control" style="width:auto; font-size:13px; padding:6px 10px;">
+            <option value="">{{ _('All Dates') }}</option>
+            {% for d in ns2.dates %}<option value="{{ d }}">{{ d }}</option>{% endfor %}
+        </select>
+        <select id="filterBus" onchange="filterTrips()" class="form-control" style="width:auto; font-size:13px; padding:6px 10px;">
+            <option value="">{{ _('All Buses') }}</option>
+            {% for b in ns3.buses %}<option value="{{ b }}">{{ b }}</option>{% endfor %}
+        </select>
+        <button onclick="clearFilters()" class="btn btn-outline btn-sm" id="clearFiltersBtn" style="display:none;"><i class="fas fa-times"></i> {{ _('Clear') }}</button>
+        <div style="flex:1;"></div>
+        <span style="font-size:12px; font-weight:600; color:#555; padding:6px 0;">{{ _('Export') }}:</span>
+        <button onclick="exportExcel()" class="btn btn-sm btn-outline"><i class="fas fa-file-excel"></i> {{ _('Excel') }}</button>
+        <button onclick="exportPDF()" class="btn btn-sm btn-outline"><i class="fas fa-file-pdf"></i> {{ _('PDF') }}</button>
+    </div>
+    <div style="font-size:12px; color:#888; margin-bottom:8px;" id="filterCount">{{ past_trip_reports|length }} {{ _('trip(s)') }}</div>
+    <div class="table-wrap"><table id="tripReportsTable">
+        <tr>
+            <th>{{ _('Route') }}</th>
+            <th>{{ _('Date') }}</th>
+            <th>{{ _('Bus') }}</th>
+            <th>{{ _('Seats') }}</th>
+            <th>{{ _('Revenue') }}</th>
+            <th>{{ _('Expenses') }}</th>
+            <th>{{ _('Profit') }}</th>
+            <th>{{ _('Action') }}</th>
+        </tr>
+        {% for tr in past_trip_reports %}
+        {% set rname = (tr.route.from if tr.route else '?') ~ ' → ' ~ (tr.route.to if tr.route else '?') %}
+        {% set bplate = tr.bus.plate if tr.bus else '-' %}
+        <tr class="trip-row" style="{% if loop.index > 10 %}display:none;{% endif %}"
+            data-route="{{ rname }}" data-date="{{ tr.schedule.date }}" data-bus="{{ bplate }}">
+            <td><strong>{{ tr.route.from if tr.route else '?' }} → {{ tr.route.to if tr.route else '?' }}</strong></td>
+            <td>{{ tr.schedule.date }}</td>
+            <td><span class="badge {% if tr.bus and tr.bus.bus_type == 'vip' %}badge-blue{% else %}badge-orange{% endif %}">{{ bplate }}</span></td>
+            <td>{{ tr.booked }}/{{ tr.capacity }}</td>
+            <td style="color:var(--flag-1); font-weight:600;">{{ tr.total_revenue|int|currency }}</td>
+            <td>{{ tr.expenses|int|currency }}</td>
+            <td style="font-weight:700; color:{% if tr.profit >= 0 %}#2e7d32{% else %}#c62828{% endif %};">{{ tr.profit|int|currency }}</td>
+            <td>
+                {% if not tr.report %}
+                <a href="#" onclick="showExpenseForm({{ tr.schedule.id }}); return false;" class="btn btn-sm btn-success"><i class="fas fa-edit"></i> {{ _('Log') }}</a>
+                {% else %}
+                <span class="badge badge-green"><i class="fas fa-check"></i> {{ _('Logged') }}</span>
+                {% endif %}
+            </td>
+        </tr>
+        {% endfor %}
+    </table></div>
+    {% if past_trip_reports|length > 10 %}
+    <div style="text-align:center; margin-top:12px;">
+        <button onclick="loadMoreTrips()" class="btn btn-outline btn-sm" id="loadMoreTripsBtn">{{ _('Load More') }}</button>
+        <button onclick="showLessTrips()" class="btn btn-outline btn-sm" id="showLessTripsBtn" style="display:none;">{{ _('Show Less') }}</button>
+    </div>
+    {% endif %}
+</div>
+
+<div id="expenseModal" style="display:none; position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.4); z-index:9999; align-items:center; justify-content:center;">
+    <div style="background:#fff; border-radius:12px; padding:24px; max-width:360px; width:90%; box-shadow:0 8px 32px rgba(0,0,0,0.2);">
+        <h3 style="margin:0 0 16px; font-size:16px;"><i class="fas fa-receipt" style="color:var(--flag-1);"></i> {{ _('Log Expenses') }}</h3>
+        <form id="expenseForm" onsubmit="return saveExpense(event)">
+            <input type="hidden" id="expScheduleId" value="">
+            <div class="form-group">
+                <label style="font-size:13px; font-weight:600;">{{ _('Total Expenses') }}</label>
+                <input type="number" id="expAmount" class="form-control" min="0" value="0" required style="font-size:15px; font-weight:700;">
+            </div>
+            <div style="display:flex; gap:8px; margin-top:14px;">
+                <button type="submit" class="btn btn-success" style="flex:1;"><i class="fas fa-save"></i> {{ _('Save') }}</button>
+                <button type="button" class="btn btn-outline" onclick="closeExpenseModal()" style="flex:1;">{{ _('Cancel') }}</button>
+            </div>
+        </form>
+    </div>
+</div>
 {% endif %}
 
 <div class="grid-2" style="margin-bottom:20px;">
@@ -168,4 +273,163 @@
     {% endfor %}</table></div>
     {% else %}<p style="color:#888; font-size:13px;">{{ _('No trips scheduled.') }}</p>{% endif %}
 </div>
+{% endblock %}
+{% block scripts %}
+<script>
+var tripPage = 10;
+var filterActive = false;
+
+function getVisibleRows() {
+    return Array.prototype.slice.call(document.querySelectorAll('.trip-row')).filter(function(r) {
+        return r.style.display !== 'none';
+    });
+}
+function getAllRows() {
+    return Array.prototype.slice.call(document.querySelectorAll('.trip-row'));
+}
+
+function filterTrips() {
+    var rv = document.getElementById('filterRoute').value;
+    var dv = document.getElementById('filterDate').value;
+    var bv = document.getElementById('filterBus').value;
+    filterActive = !!(rv || dv || bv);
+    document.getElementById('clearFiltersBtn').style.display = filterActive ? '' : 'none';
+    var rows = getAllRows();
+    var shown = 0;
+    for (var i = 0; i < rows.length; i++) {
+        var r = rows[i];
+        var match = true;
+        if (rv && r.getAttribute('data-route') !== rv) match = false;
+        if (dv && r.getAttribute('data-date') !== dv) match = false;
+        if (bv && r.getAttribute('data-bus') !== bv) match = false;
+        r.style.display = match ? '' : 'none';
+        if (match) shown++;
+    }
+    document.getElementById('filterCount').textContent = shown + ' {{ _("trip(s)") }}';
+    var loadMore = document.getElementById('loadMoreTripsBtn');
+    var showLess = document.getElementById('showLessTripsBtn');
+    if (loadMore) loadMore.style.display = filterActive ? 'none' : (shown > 10 ? '' : 'none');
+    if (showLess) showLess.style.display = 'none';
+    tripPage = filterActive ? rows.length : 10;
+    if (!filterActive) {
+        for (var i = 10; i < rows.length; i++) rows[i].style.display = 'none';
+        tripPage = 10;
+        if (loadMore && rows.length > 10) loadMore.style.display = '';
+    }
+}
+
+function clearFilters() {
+    document.getElementById('filterRoute').value = '';
+    document.getElementById('filterDate').value = '';
+    document.getElementById('filterBus').value = '';
+    filterTrips();
+}
+
+function loadMoreTrips() {
+    var rows = getAllRows();
+    var end = tripPage + 10;
+    for (var i = tripPage; i < end && i < rows.length; i++) {
+        rows[i].style.display = '';
+    }
+    tripPage = end;
+    if (tripPage >= rows.length) {
+        document.getElementById('loadMoreTripsBtn').style.display = 'none';
+    }
+    document.getElementById('showLessTripsBtn').style.display = '';
+}
+
+function showLessTrips() {
+    var rows = getAllRows();
+    for (var i = 10; i < rows.length; i++) {
+        rows[i].style.display = 'none';
+    }
+    tripPage = 10;
+    document.getElementById('loadMoreTripsBtn').style.display = '';
+    document.getElementById('showLessTripsBtn').style.display = 'none';
+}
+
+function exportExcel() {
+    var rows = filterActive ? getVisibleRows() : getAllRows();
+    var hdr = ['Route','Date','Bus','Seats','Revenue','Expenses','Profit'];
+    var csv = '\uFEFF' + hdr.join(',') + '\n';
+    for (var i = 0; i < rows.length; i++) {
+        var cells = rows[i].querySelectorAll('td');
+        var line = [];
+        for (var j = 0; j < 7; j++) {
+            var t = cells[j] ? cells[j].textContent.trim().replace(/,/g, '') : '';
+            if (j >= 3) t = t.replace(/[^0-9\-]/g, '');
+            line.push('"' + t.replace(/"/g, '""') + '"');
+        }
+        csv += line.join(',') + '\n';
+    }
+    csv += '\n{{ _("Revenue by Route") }}\n';
+    csv += '{{ _("Route") }},{{ _("Revenue") }}\n';
+    {% for route_name, amt in revenue_by_route.items() %}
+    csv += '"{{ route_name }}","{{ amt }}"\n';
+    {% endfor %}
+    var blob = new Blob([csv], {type:'text/csv;charset=utf-8;'});
+    var a = document.createElement('a');
+    a.href = URL.createObjectURL(blob);
+    a.download = 'trip_reports_{{ today_str }}.csv';
+    a.click();
+}
+
+function exportPDF() {
+    var printWin = window.open('', '_blank');
+    var rows = filterActive ? getVisibleRows() : getAllRows();
+    var html = '<html><head><title>Trip Reports</title>';
+    html += '<style>body{font-family:Arial,sans-serif;padding:20px;}';
+    html += 'h2{color:#1a5f2a;}h3{color:#333;margin-top:20px;}';
+    html += 'table{width:100%;border-collapse:collapse;margin-top:10px;}';
+    html += 'th,td{border:1px solid #ddd;padding:8px;text-align:left;font-size:12px;}';
+    html += 'th{background:#1a5f2a;color:white;}';
+    html += '.green{color:#2e7d32;font-weight:bold;}';
+    html += '.red{color:#c62828;font-weight:bold;}</style></head><body>';
+    html += '<h2>{{ agency.name }} - {{ _("Trip Reports") }}</h2>';
+    html += '<table><tr><th>{{ _("Route") }}</th><th>{{ _("Date") }}</th><th>{{ _("Bus") }}</th><th>{{ _("Seats") }}</th><th>{{ _("Revenue") }}</th><th>{{ _("Expenses") }}</th><th>{{ _("Profit") }}</th></tr>';
+    for (var i = 0; i < rows.length; i++) {
+        var cells = rows[i].querySelectorAll('td');
+        html += '<tr>';
+        for (var j = 0; j < 7; j++) {
+            var cls = (j === 6) ? (rows[i].querySelectorAll('td')[6].style.color === 'rgb(198, 40, 40)' ? ' class="red"' : ' class="green"') : '';
+            html += '<td' + cls + '>' + (cells[j] ? cells[j].textContent.trim() : '') + '</td>';
+        }
+        html += '</tr>';
+    }
+    html += '</table>';
+    html += '<h3>{{ _("Revenue by Route") }}</h3>';
+    html += '<table><tr><th>{{ _("Route") }}</th><th>{{ _("Revenue") }}</th><th>{{ _("Share") }}</th></tr>';
+    {% for route_name, amt in revenue_by_route.items() %}
+    html += '<tr><td>{{ route_name }}</td><td>{{ "{:,}".format(amt) }} {{ country.currency }}</td><td>{{ (amt / total_revenue * 100)|round }}%</td></tr>';
+    {% endfor %}
+    html += '</table>';
+    html += '<script>window.onload=function(){window.print();window.close();}<\/script></body></html>';
+    printWin.document.write(html);
+    printWin.document.close();
+}
+
+function showExpenseForm(sid) {
+    document.getElementById('expScheduleId').value = sid;
+    document.getElementById('expAmount').value = '0';
+    document.getElementById('expenseModal').style.display = 'flex';
+}
+function closeExpenseModal() {
+    document.getElementById('expenseModal').style.display = 'none';
+}
+function saveExpense(e) {
+    e.preventDefault();
+    var sid = document.getElementById('expScheduleId').value;
+    var fd = new FormData();
+    fd.append('schedule_id', sid);
+    fd.append('expenses', document.getElementById('expAmount').value);
+    fetch('/api/agency/trip-report', {method:'POST', body:fd})
+    .then(function(r){return r.json()})
+    .then(function(d){
+        if(d.ok){ location.reload(); }
+        else { alert(d.error || 'Error saving'); }
+    })
+    .catch(function(err){ alert('Network error: ' + err.message); });
+    return false;
+}
+</script>
 {% endblock %}
